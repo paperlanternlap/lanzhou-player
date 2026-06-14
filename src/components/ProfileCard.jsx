@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom'
+
 export default function ProfileCard({ character, onOpenExchange }) {
+  const navigate = useNavigate()
   function handleLogout() {
     localStorage.removeItem('characterId')
-    window.location.href = '/login'
+    navigate('/login')
   }
   return (
     <div

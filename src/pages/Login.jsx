@@ -26,7 +26,7 @@ export default function Login() {
 
     console.log('SAVED CHARACTER ID', localStorage.getItem('characterId'))
 
-    window.location.href = '/dashboard'
+    navigate('/dashboard')
   }
 
   return (
