@@ -5,6 +5,7 @@ import { supabase } from '../supabase'
 export default function Login() {
   const [username, setUsername] = useState('')
   const navigate = useNavigate()
+  console.log('BASE URL', import.meta.env.BASE_URL)
 
   async function handleLogin() {
     const { data, error } = await supabase
@@ -26,7 +27,7 @@ export default function Login() {
 
     console.log('SAVED CHARACTER ID', localStorage.getItem('characterId'))
 
-    navigate('/dashboard')
+    navigate('dashboard')
   }
 
   return (
