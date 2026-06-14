@@ -1,4 +1,8 @@
-export default function ProfileCard({ onOpenExchange }) {
+export default function ProfileCard({ character, onOpenExchange }) {
+  function handleLogout() {
+    localStorage.removeItem('characterId')
+    window.location.href = '/login'
+  }
   return (
     <div
       style={{
@@ -30,6 +34,7 @@ export default function ProfileCard({ onOpenExchange }) {
         </button>
 
         <button
+          onClick={handleLogout}
           style={{
             border: '1px solid #e3d6bf',
             background: '#fff',
@@ -38,7 +43,7 @@ export default function ProfileCard({ onOpenExchange }) {
             cursor: 'pointer',
           }}
         >
-          ⚙️
+          ออกจากตำหนัก
         </button>
       </div>
 
@@ -49,23 +54,18 @@ export default function ProfileCard({ onOpenExchange }) {
           marginTop: '8px',
         }}
       >
-        <div
+        <img
+          src={character.avatar_url}
+          alt={character.character_name}
           style={{
             width: '320px',
             height: '420px',
-            background: '#ece4d8',
             border: '2px solid #d8c7a3',
             borderRadius: '16px',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#9b8a6a',
-            fontSize: '14px',
+            objectFit: 'cover',
+            background: '#ece4d8',
           }}
-        >
-          รูปตัวละคร
-        </div>
+        />
       </div>
 
       <h2
@@ -75,11 +75,11 @@ export default function ProfileCard({ onOpenExchange }) {
           textAlign: 'center',
         }}
       >
-        หลินหว่านอิง
+        {character.character_name}
       </h2>
 
       <div style={{ textAlign: 'center' }}>
-        นางกำนัลชั้นกลาง
+        {character.role}
       </div>
 
       <div
@@ -89,7 +89,7 @@ export default function ProfileCard({ onOpenExchange }) {
           textAlign: 'center',
         }}
       >
-        ตำหนักฮวาชิง
+        {character.position}
       </div>
     </div>
   )

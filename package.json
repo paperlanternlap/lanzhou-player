@@ -4,22 +4,18 @@
   "version": "0.0.0",
   "homepage": "https://paperlanternlap.github.io/lanzhou-player",
   "type": "module",
-"scripts": {
-
-  "dev": "vite",
-
-  "build": "vite build",
-
-  "lint": "eslint .",
-
-  "preview": "vite preview",
-
-  "deploy": "gh-pages -d dist"
-
-},
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.1",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

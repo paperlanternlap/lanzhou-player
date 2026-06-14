@@ -1,4 +1,4 @@
-export default function PointCard({ onOpenExchange }) {
+export default function PointCard({ character, onOpenExchange }) {
   return (
     <div>
       <div
@@ -18,7 +18,9 @@ export default function PointCard({ onOpenExchange }) {
           }}
         >
           <div>RP Point</div>
-          <strong style={{ fontSize: '32px' }}>1,250</strong>
+          <strong style={{ fontSize: '32px' }}>
+            {character?.rp ?? 0}
+          </strong>
         </div>
 
         <div
@@ -30,14 +32,14 @@ export default function PointCard({ onOpenExchange }) {
           }}
         >
           <div>โปรดปราน</div>
-          <strong style={{ fontSize: '32px' }}>85</strong>
+          <strong style={{ fontSize: '32px' }}>
+            {character?.favor ?? 0}
+          </strong>
         </div>
       </div>
 
       <button
-        onClick={() => {
-          onOpenExchange?.()
-        }}
+        onClick={() => onOpenExchange?.()}
         style={{
           marginTop: '12px',
           width: '100%',

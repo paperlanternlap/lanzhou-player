@@ -1,6 +1,4 @@
-
-
-export default function InventoryCard() {
+export default function InventoryCard({ inventory = [] }) {
   return (
     <div
       style={{
@@ -33,40 +31,20 @@ export default function InventoryCard() {
       </div>
 
       <div style={{ marginTop: '12px' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '10px 0',
-            borderBottom: '1px solid #eee',
-          }}
-        >
-          <span>ผ้าไหม</span>
-          <span>x2</span>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '10px 0',
-            borderBottom: '1px solid #eee',
-          }}
-        >
-          <span>เครื่องหอม</span>
-          <span>x1</span>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '10px 0',
-          }}
-        >
-          <span>ป้ายหยก</span>
-          <span>x3</span>
-        </div>
+        {inventory.map((item) => (
+          <div
+            key={item.id}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '10px 0',
+              borderBottom: '1px solid #eee',
+            }}
+          >
+            <span>{item.item_name ?? item.name}</span>
+            <span>x{item.quantity ?? item.amount}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

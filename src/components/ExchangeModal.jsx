@@ -1,7 +1,8 @@
+import { useState } from 'react'
 
-
-export default function ExchangeModal({ open, onClose }) {
+export default function ExchangeModal({ open, onClose, followers = [], onExchange }) {
   if (!open) return null
+  const [tab, setTab] = useState('followers')
 
   return (
     <div
@@ -49,20 +50,61 @@ export default function ExchangeModal({ open, onClose }) {
             ×
           </button>
         </div>
-
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <button style={{ padding: '12px', borderRadius: '12px' }}>
-            แลกผู้ติดตามพิเศษ
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          <button onClick={() => setTab('followers')}>
+            ผู้ติดตาม
           </button>
 
-          <button style={{ padding: '12px', borderRadius: '12px' }}>
-            แลกไอเท็ม
+          <button onClick={() => setTab('items')}>
+            ไอเท็ม
           </button>
 
-          <button style={{ padding: '12px', borderRadius: '12px' }}>
-            แลกโปรดปราน
+          <button onClick={() => setTab('favor')}>
+            โปรดปราน
           </button>
         </div>
+
+        {tab === 'followers' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {followers.map((follower) => (
+              <div key={follower.id} style={{ border: '1px solid #ddd', borderRadius: '12px', padding: '12px' }}>
+                <strong>{follower.name}</strong>
+                <div>
+                  {follower.skill_type} ★{'★'.repeat(follower.skill_value || 1)}
+                </div>
+                <div>ราคา {follower.cost} RP</div>
+                <button
+                  style={{ marginTop: '8px' }}
+                  onClick={() => {
+                    onExchange?.(follower)
+                  }}
+                >
+                  แลก
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'items' && (
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {playerData.shop.items.map((item) => (
+              <div key={item.id} style={{ border: '1px solid #ddd', borderRadius: '12px', padding: '12px' }}>
+                <strong>{item.name}</strong>
+                <div>ราคา {item.cost} RP</div>
+                <button style={{ marginTop: '8px' }}>แลก</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'favor' && (
+          <div style={{ border: '1px solid #ddd', borderRadius: '12px', padding: '12px' }}>
+            <strong>โปรดปราน +5</strong>
+            <div>ราคา 50 RP</div>
+            <button style={{ marginTop: '8px' }}>แลก</button>
+          </div>
+        )}
       </div>
     </div>
   )
