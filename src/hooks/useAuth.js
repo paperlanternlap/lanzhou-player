@@ -4,13 +4,27 @@ import { useEffect, useState } from 'react'
 
 export function useAuth() {
   const [characterId, setCharacterId] = useState(() => {
-    return Number(localStorage.getItem('characterId')) || null
+    const stored = localStorage.getItem('characterId')
+
+    if (!stored || stored === 'null' || stored === 'undefined') {
+      return null
+    }
+
+    const id = Number(stored)
+    return Number.isFinite(id) && id > 0 ? id : null
   })
 
   useEffect(() => {
     const syncAuth = () => {
-      const id = Number(localStorage.getItem('characterId')) || null
-      setCharacterId(id)
+      const stored = localStorage.getItem('characterId')
+
+      if (!stored || stored === 'null' || stored === 'undefined') {
+        setCharacterId(null)
+        return
+      }
+
+      const id = Number(stored)
+      setCharacterId(Number.isFinite(id) && id > 0 ? id : null)
     }
 
     // sync from other tabs
