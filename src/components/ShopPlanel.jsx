@@ -1,4 +1,17 @@
-export default function ShopPanel() {
+import { useState } from 'react'
+
+export default function ShopPanel({
+  shopFollowers = [],
+  shopItems = [],
+  onBuyItem,
+  onBuyFollower,
+}) {
+  const [activeTab, setActiveTab] = useState('followers')
+
+  const items = activeTab === 'followers'
+    ? shopFollowers
+    : shopItems
+
   return (
     <div
       style={{
@@ -30,8 +43,25 @@ export default function ShopPanel() {
           border: '1px solid #111',
         }}
       >
-        <button style={{ padding: '8px', fontWeight: 'bold' }}>ผู้ติดตาม</button>
-        <button style={{ padding: '8px' }}>ไอเท็ม</button>
+        <button
+          onClick={() => setActiveTab('followers')}
+          style={{
+            padding: '8px',
+            fontWeight: activeTab === 'followers' ? 'bold' : 'normal',
+          }}
+        >
+          ผู้ติดตาม
+        </button>
+
+        <button
+          onClick={() => setActiveTab('items')}
+          style={{
+            padding: '8px',
+            fontWeight: activeTab === 'items' ? 'bold' : 'normal',
+          }}
+        >
+          ไอเท็ม
+        </button>
       </div>
 
       <div
@@ -43,15 +73,9 @@ export default function ShopPanel() {
           gap: '8px',
         }}
       >
-        {[
-          ['หลินเซียง', '350 RP'],
-          ['อาเป่า', '250 RP'],
-          ['ซูหยวน', '200 RP'],
-          ['เดิ้นอ๋อ', '300 RP'],
-          ['ม่อหลาน', '320 RP'],
-        ].map(([name, price]) => (
+        {items.map((item) => (
           <div
-            key={name}
+            key={item.id}
             style={{
               border: '1px solid #111',
               padding: '8px',
@@ -61,10 +85,23 @@ export default function ShopPanel() {
             }}
           >
             <div>
-              <strong>{name}</strong>
-              <div>★★★★★ · {price}</div>
+              <strong>{item.name}</strong>
+              <div>
+                {item.description ?? 'ไม่มีรายละเอียด'}
+              </div>
             </div>
-            <button>แลก</button>
+
+            <button
+              onClick={() => {
+                if (activeTab === 'followers') {
+                  onBuyFollower?.(item)
+                } else {
+                  onBuyItem?.(item)
+                }
+              }}
+            >
+              ซื้อ ({item.cost ?? item.price ?? 0} RP)
+            </button>
           </div>
         ))}
       </div>

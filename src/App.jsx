@@ -22,6 +22,7 @@ function App() {
   const [activities, setActivities] = useState([])
   const [followers, setFollowers] = useState([])
   const [shopFollowers, setShopFollowers] = useState([])
+  const [shopItems, setShopItems] = useState([])
 
   useEffect(() => {
     if (!characterId) {
@@ -30,6 +31,7 @@ function App() {
       setActivities([])
       setFollowers([])
       setShopFollowers([])
+      setShopItems([])
       return
     }
 
@@ -38,6 +40,7 @@ function App() {
     loadActivities()
     loadFollowers()
     loadShopFollowers()
+    loadShopItems()
   }, [characterId])
 
   async function loadCharacter() {
@@ -52,8 +55,21 @@ function App() {
       return
     }
 
-    console.log('CHARACTER', data)
-    setCharacter(data)
+    const { data: promotionData } = await supabase
+      .from('rank_requirements')
+      .select('*')
+      .eq('current_position', data.position)
+      .maybeSingle()
+
+    const enrichedCharacter = {
+      ...data,
+      next_position: promotionData?.next_position ?? null,
+      favor_required: promotionData?.favor_required ?? null,
+      max_slots: promotionData?.max_slots ?? null,
+    }
+
+    console.log('CHARACTER', enrichedCharacter)
+    setCharacter(enrichedCharacter)
   }
 
   async function loadInventory() {
@@ -115,6 +131,20 @@ function App() {
 
     console.log('SHOP_FOLLOWERS', data)
     setShopFollowers(data)
+  }
+
+  async function loadShopItems() {
+    const { data, error } = await supabase
+      .from('item_master')
+      .select('*')
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    console.log('SHOP_ITEMS', data)
+    setShopItems(data)
   }
 
   async function handleExchange(follower) {
@@ -212,6 +242,154 @@ function App() {
 
     await loadCharacter()
     await loadActivities()
+  }
+
+  async function handleBuyItem(item) {
+    const itemCost = item.cost ?? item.price ?? 0
+
+    if (character.rp < itemCost) {
+      alert('RP ไม่เพียงพอ')
+      return
+    }
+
+    const { error: rpError } = await supabase
+      .from('characters')
+      .update({
+        rp: character.rp - itemCost,
+      })
+      .eq('id', characterId)
+
+    if (rpError) {
+      console.error(rpError)
+      alert('หัก RP ไม่สำเร็จ')
+      return
+    }
+
+    const { data: existingItem } = await supabase
+      .from('character_inventory')
+      .select('*')
+      .eq('character_id', characterId)
+      .eq('item_name', item.name)
+      .maybeSingle()
+
+    if (existingItem) {
+      const { error } = await supabase
+        .from('character_inventory')
+        .update({
+          quantity: existingItem.quantity + 1,
+        })
+        .eq('id', existingItem.id)
+
+      if (error) {
+        console.error(error)
+        alert('เพิ่มไอเท็มไม่สำเร็จ')
+        return
+      }
+    } else {
+      const { error } = await supabase
+        .from('character_inventory')
+        .insert({
+          character_id: characterId,
+          item_name: item.name,
+          quantity: 1,
+        })
+
+      if (error) {
+        console.error(error)
+        alert('เพิ่มไอเท็มไม่สำเร็จ')
+        return
+      }
+    }
+
+    await supabase
+      .from('character_history')
+      .insert({
+        character_id: characterId,
+        action: 'ซื้อไอเท็ม',
+        value: item.name,
+        type: 'shop',
+      })
+
+    alert(`ซื้อ ${item.name} สำเร็จ`)
+
+    await loadCharacter()
+    await loadInventory()
+    await loadActivities()
+  }
+
+  async function handlePromote() {
+    if (!character?.next_position) {
+      alert('ตำแหน่งนี้ไม่สามารถเลื่อนขั้นได้แล้ว')
+      return
+    }
+  
+    if (character.favor < character.favor_required) {
+      alert('โปรดปรานไม่เพียงพอ')
+      return
+    }
+    if (character.max_slots) {
+
+      const { count, error } = await supabase
+    
+        .from('characters')
+    
+        .select('*', {
+    
+          count: 'exact',
+    
+          head: true,
+    
+        })
+    
+        .eq('position', character.next_position)
+    
+      if (error) {
+    
+        console.error(error)
+    
+        alert('ตรวจสอบตำแหน่งไม่สำเร็จ')
+    
+        return
+    
+      }
+    
+      if (count >= character.max_slots) {
+    
+        alert('ตำแหน่งนี้เต็มแล้ว')
+    
+        return
+    
+      }
+    
+    }
+  
+    const { error: updateError } = await supabase
+  .from('characters')
+  .update({
+    position: character.next_position,
+    favor: character.favor - character.favor_required,
+  })
+  .eq('id', characterId)
+
+if (updateError) {
+  console.error(updateError)
+  alert('เลื่อนขั้นไม่สำเร็จ')
+  return
+}
+
+await supabase
+  .from('character_history')
+  .insert({
+    character_id: characterId,
+    action: 'เลื่อนขั้น',
+    value: `${character.position} → ${character.next_position}`,
+    type: 'promotion',
+  })
+
+alert(`เลื่อนขั้นเป็น ${character.next_position} สำเร็จ`)
+
+await loadCharacter()
+await loadActivities()
   }
 
 
@@ -382,7 +560,10 @@ function App() {
                       }}
                     />
 
-                    <PromotionCard />
+                    <PromotionCard
+                      character={character}
+                      onPromote={handlePromote}
+                    />
                     <PointCard
                       character={character}
                       onOpenExchange={() => {
@@ -428,7 +609,12 @@ function App() {
                           ← ปิดร้านค้า
                         </button>
                       </div>
-                      <ShopPanel />
+                      <ShopPanel
+                        shopFollowers={shopFollowers}
+                        shopItems={shopItems}
+                        onBuyItem={handleBuyItem}
+                        onBuyFollower={handleExchange}
+                      />
                     </>
                   ) : (
                     <ActivityCard activities={activities} />
