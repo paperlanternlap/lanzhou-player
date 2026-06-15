@@ -11,41 +11,33 @@ export default function ProfileCard({ character, onOpenExchange, onLogout }) {
   return (
     <div
       style={{
-        background: '#fcfaf6',
-        border: '1px solid #e3d6bf',
-        borderRadius: '20px',
-        padding: '16px',
+        background: '#ffffff',
+        border: '2px solid #111',
+        borderRadius: '0',
+        padding: '6px',
+        height: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <div
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
-          gap: '8px',
-          marginBottom: '12px',
+          gap: '4px',
+          marginBottom: '2px',
         }}
       >
-        <button
-          onClick={onOpenExchange}
-          style={{
-            border: '1px solid #e3d6bf',
-            background: '#fff',
-            borderRadius: '12px',
-            padding: '8px 12px',
-            cursor: 'pointer',
-          }}
-        >
-          แลกคะแนน
-        </button>
 
         <button
           onClick={handleLogout}
           style={{
-            border: '1px solid #e3d6bf',
+            border: '1px solid #111',
             background: '#fff',
-            borderRadius: '12px',
-            padding: '8px 12px',
+            borderRadius: '0',
+            padding: '3px 6px',
             cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '10px',
           }}
         >
           ออกจากตำหนัก
@@ -54,44 +46,47 @@ export default function ProfileCard({ character, onOpenExchange, onLogout }) {
 
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: '8px',
+          width: '100%',
+          marginTop: '4px',
         }}
       >
         <img
           src={character.avatar_url}
           alt={character.character_name}
           style={{
-            width: '320px',
-            height: '420px',
-            border: '2px solid #d8c7a3',
-            borderRadius: '16px',
+            width: '100%',
+            height: '180px',
+            border: '2px solid #111',
+            borderRadius: '0',
             objectFit: 'cover',
-            background: '#ece4d8',
+            background: '#f5f5f5',
           }}
         />
       </div>
 
       <h2
         style={{
-          marginTop: '12px',
-          marginBottom: '4px',
+          marginTop: '6px',
+          marginBottom: '0px',
           textAlign: 'center',
+          borderTop: '2px solid #111',
+          paddingTop: '6px',
+          fontSize: '14px',
         }}
       >
         {character.character_name}
       </h2>
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '11px' }}>
         {character.role}
       </div>
 
       <div
         style={{
-          color: '#777',
+          color: '#555',
           marginTop: '4px',
           textAlign: 'center',
+          fontSize: '11px',
         }}
       >
         {character.position}

@@ -1,29 +1,35 @@
-export default function DashboardLayout({ left, right }) {
-    return (
+export default function DashboardLayout({ left, center, right }) {
+  return (
+    <div
+      style={{
+        height: '100vh',
+        background: '#ffffff',
+        padding: '8px',
+        overflow: 'auto',
+        boxSizing: 'border-box',
+      }}
+    >
       <div
         style={{
-          minHeight: '100vh',
-          background: '#f8f4ee',
-          padding: '24px',
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: '300px minmax(0, 1fr) 320px',
+          gap: '12px',
+          alignItems: 'start',
         }}
       >
-        <div
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '24px',
-          }}
-        >
-          <div>
-            {left}
-          </div>
-  
-          <div>
-            {right}
-          </div>
+        <div>
+          {left}
+        </div>
+
+        <div>
+          {center}
+        </div>
+
+        <div style={{ height: '100%' }}>
+          {right}
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
