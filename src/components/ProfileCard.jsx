@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 
-export default function ProfileCard({ character, onOpenExchange }) {
+export default function ProfileCard({ character, onOpenExchange, onLogout }) {
   const navigate = useNavigate()
   function handleLogout() {
-    localStorage.removeItem('characterId')
-    navigate('/login')
+    if (onLogout) {
+      onLogout()
+    }
+    navigate('/login', { replace: true })
   }
   return (
     <div

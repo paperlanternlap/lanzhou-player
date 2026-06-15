@@ -10,9 +10,10 @@ import DashboardLayout from './layouts/DashboardLayout'
 import { supabase } from './supabase'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
+import { useAuth } from './hooks/useAuth'
 
 function App() {
-  const characterId = Number(localStorage.getItem('characterId'))
+  const { characterId, logout } = useAuth()
   const [isExchangeOpen, setIsExchangeOpen] = useState(false)
   const [character, setCharacter] = useState(null)
   const [inventory, setInventory] = useState([])
@@ -21,7 +22,14 @@ function App() {
   const [shopFollowers, setShopFollowers] = useState([])
 
   useEffect(() => {
-    if (!characterId) return
+    if (!characterId) {
+      setCharacter(null)
+      setInventory([])
+      setActivities([])
+      setFollowers([])
+      setShopFollowers([])
+      return
+    }
 
     loadCharacter()
     loadInventory()
@@ -165,6 +173,9 @@ function App() {
                       character={character}
                       onOpenExchange={() => {
                         setIsExchangeOpen(true)
+                      }}
+                      onLogout={() => {
+                        logout()
                       }}
                     />
                     <PointCard

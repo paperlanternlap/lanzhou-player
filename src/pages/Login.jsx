@@ -1,18 +1,28 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Login() {
   const [username, setUsername] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  console.log('BASE URL', import.meta.env.BASE_URL)
+  const { login } = useAuth()
 
   async function handleLogin() {
+    if (loading) return
+    if (!username.trim()) {
+      alert('กรุณากรอก Username')
+      return
+    }
+
+    setLoading(true)
+
     const { data, error } = await supabase
       .from('characters')
       .select('*')
-      .eq('username', username)
-      .single()
+      .eq('username', username.trim())
+      .maybeSingle()
 
     console.log('LOGIN USERNAME', username)
     console.log('LOGIN RESULT', data)
@@ -20,14 +30,17 @@ export default function Login() {
 
     if (error || !data) {
       alert('ไม่พบ Username นี้')
+      setLoading(false)
       return
     }
 
-    localStorage.setItem('characterId', String(data.id))
+    login(data.id)
 
     console.log('SAVED CHARACTER ID', localStorage.getItem('characterId'))
 
-    navigate('dashboard')
+    navigate('/dashboard', { replace: true })
+
+    setLoading(false)
   }
 
   return (
@@ -68,6 +81,7 @@ export default function Login() {
 
         <button
           onClick={handleLogin}
+          disabled={loading || !username.trim()}
           style={{
             width: '100%',
             marginTop: '16px',
