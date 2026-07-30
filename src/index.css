@@ -1435,14 +1435,225 @@ textarea:focus-visible {
 }
 
 .item-detail-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 16px;
 }
 
 .item-detail-actions .form-hint {
-  align-self: stretch;
+  grid-column: 1 / -1;
+}
+
+.item-detail-actions :is(.primary-button, .secondary-button) {
+  width: 100%;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.transfer-dialog {
+  width: min(620px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 32px));
+  padding: 26px;
+  overflow-y: auto;
+}
+
+.transfer-dialog .eyebrow {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.transfer-dialog h2 {
+  font-size: 24px;
+}
+
+.transfer-dialog .dialog-intro {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.transfer-dialog form {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.transfer-dialog form > label,
+.transfer-confirmation label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.transfer-dialog input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 13px;
+  color: var(--ink);
+  background: #fffdf9;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  outline: none;
+  font: 400 13px "Noto Sans Thai", "Leelawadee UI", sans-serif;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.transfer-dialog input::placeholder {
+  color: #a89d91;
+}
+
+.transfer-dialog input:focus {
+  border-color: #b78079;
+  box-shadow: 0 0 0 3px rgb(132 54 50 / 10%);
+}
+
+.recipient-results {
+  display: grid;
+  gap: 8px;
+  min-height: 64px;
+  max-height: 300px;
+  padding-right: 3px;
+  overflow-y: auto;
+}
+
+.recipient-message {
+  margin: 0;
+  padding: 18px;
+  color: var(--muted);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+.recipient-option {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--ink);
+  background: #fffdf9;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgb(64 38 28 / 4%);
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.recipient-option:hover,
+.recipient-option.selected {
+  border-color: var(--accent);
+  background: #fbf2ee;
+  transform: translateY(-1px);
+}
+
+.recipient-avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--accent);
+  background: #f2e7d7;
+  border-radius: 50%;
+}
+
+.recipient-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipient-option > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.recipient-option strong {
+  font-size: 13px;
+}
+
+.recipient-option small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipient-option i {
+  color: var(--accent);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.transfer-confirmation {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  align-items: end;
+  gap: 16px;
+  padding: 15px 16px;
+  background: #f8f1e7;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.transfer-confirmation > div {
+  display: grid;
+  gap: 3px;
+}
+
+.transfer-confirmation strong {
+  font-size: 15px;
+}
+
+.transfer-confirmation span,
+.transfer-confirmation small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.transfer-dialog .form-hint {
+  padding: 10px 12px;
+  font-size: 10px;
+}
+
+.transfer-dialog .form-actions {
+  padding-top: 3px;
+}
+
+.transfer-dialog .form-actions button {
+  min-width: 110px;
+  min-height: 42px;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .item-detail-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .item-detail-actions .form-hint {
+    grid-column: auto;
+  }
+
+  .transfer-dialog {
+    padding: 22px 18px;
+  }
+
+  .transfer-confirmation {
+    grid-template-columns: 1fr;
+  }
 }
 
 .item-request-form {
@@ -2265,6 +2476,571 @@ textarea:focus-visible {
 
   .login-card {
     padding: 23px;
+  }
+}
+
+/* Responsive layout for the complete player portal */
+@media (max-width: 1024px) {
+  .player-dashboard {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    gap: 12px;
+    padding-inline: 14px;
+  }
+
+  .dashboard-main {
+    grid-template-columns: minmax(0, 1.35fr) minmax(210px, .8fr);
+  }
+
+  .dashboard-activity {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(260px, .75fr) minmax(0, 1.25fr);
+  }
+
+  .activity-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+
+  .shop-dialog {
+    width: calc(100vw - 28px);
+    height: calc(100dvh - 28px);
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    background: #f3eee6;
+  }
+
+  .app-topbar {
+    position: sticky;
+    min-height: 58px;
+    padding: 8px 12px;
+  }
+
+  .app-brand > span {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-brand strong {
+    font-size: 15px;
+  }
+
+  .topbar-logout {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 11px;
+  }
+
+  .player-dashboard {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 10px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-sidebar,
+  .dashboard-main,
+  .dashboard-activity {
+    display: contents;
+  }
+
+  .profile-card {
+    order: 1;
+  }
+
+  .promotion-card {
+    order: 2;
+  }
+
+  .score-panel {
+    order: 3;
+  }
+
+  .follower-panel {
+    order: 4;
+  }
+
+  .inventory-panel {
+    order: 5;
+  }
+
+  .role-submission-panel {
+    order: 6;
+  }
+
+  .activity-panel {
+    order: 7;
+  }
+
+  .panel {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+  }
+
+  .panel-heading {
+    gap: 10px;
+  }
+
+  .player-dashboard .panel-heading h2 {
+    font-size: 18px;
+  }
+
+  .profile-card__main {
+    padding-right: 76px;
+  }
+
+  .profile-copy h1 {
+    font-size: 20px;
+  }
+
+  .profile-avatar {
+    width: 68px;
+    height: 68px;
+    flex-basis: 68px;
+  }
+
+  .score-grid {
+    gap: 10px;
+  }
+
+  .score-tile {
+    min-height: 106px;
+    padding: 12px;
+  }
+
+  .score-tile strong {
+    font-size: 25px;
+  }
+
+  .shop-button,
+  .promotion-action {
+    min-height: 44px;
+  }
+
+  .follower-panel,
+  .inventory-panel,
+  .activity-panel {
+    min-height: 0;
+  }
+
+  .segmented-control {
+    scrollbar-width: none;
+  }
+
+  .segmented-control::-webkit-scrollbar {
+    display: none;
+  }
+
+  .segmented-control button {
+    min-height: 38px;
+    font-size: 11px;
+  }
+
+  .follower-row {
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    min-height: 72px;
+    padding-block: 10px;
+  }
+
+  .follower-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .follower-row .row-action {
+    min-height: 38px;
+  }
+
+  .inventory-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inventory-row {
+    min-height: 52px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .role-submission-row {
+    padding: 11px 12px;
+  }
+
+  .activity-list {
+    display: block;
+  }
+
+  .activity-row {
+    min-height: 56px;
+    padding-block: 10px;
+  }
+
+  .activity-row time {
+    display: block;
+  }
+
+  .pagination button,
+  .shop-pagination button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .dialog {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    padding: 22px 20px;
+    overflow-y: auto;
+  }
+
+  .dialog h2 {
+    padding-right: 38px;
+    font-size: 22px;
+  }
+
+  .item-request-form label,
+  .mission-form label,
+  .role-submission-form label {
+    font-size: 11px;
+  }
+
+  .item-request-form input,
+  .item-request-form select,
+  .item-request-form textarea,
+  .mission-form select,
+  .mission-form textarea,
+  .role-submission-form input,
+  .role-submission-form select,
+  .role-submission-form textarea {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .shop-dialog {
+    width: 100%;
+    height: calc(100dvh - 24px);
+    padding: 20px;
+  }
+
+  .shop-toolbar {
+    position: sticky;
+    z-index: 3;
+    top: -20px;
+    padding: 12px 0;
+    background: var(--paper);
+  }
+
+  .shop-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .shop-tabs button {
+    min-height: 44px;
+  }
+
+  .shop-follower-filter select {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .shop-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-brand small {
+    display: none;
+  }
+
+  .topbar-logout {
+    padding-inline: 10px;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .profile-card__main {
+    align-items: flex-start;
+    padding-right: 68px;
+  }
+
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    flex-basis: 60px;
+  }
+
+  .profile-copy h1 {
+    font-size: 18px;
+  }
+
+  .score-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .score-tile {
+    min-height: 100px;
+    padding: 10px;
+  }
+
+  .follower-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .follower-heading .compact-button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .follower-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .follower-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .follower-row .row-action {
+    grid-column: 2;
+    width: 100%;
+    margin-top: 3px;
+  }
+
+  .inventory-list {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-row {
+    min-height: 54px;
+  }
+
+  .activity-row {
+    grid-template-columns: 8px minmax(0, 1fr);
+  }
+
+  .activity-row time {
+    grid-column: 2;
+    margin-top: 2px;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog {
+    max-height: 100dvh;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+  }
+
+  .dialog-close {
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .form-grid,
+  .role-submission-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions,
+  .role-submission-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    width: 100%;
+  }
+
+  .form-actions button,
+  .role-submission-actions button,
+  .dialog-submit {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .shop-dialog {
+    height: 100dvh;
+    padding: 18px 14px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+
+  .shop-toolbar {
+    top: -18px;
+  }
+
+  .shop-grid {
+    gap: 10px;
+  }
+
+  .shop-card {
+    padding: 16px;
+  }
+
+  .shop-card__footer {
+    gap: 10px;
+  }
+
+  .shop-card__footer .compact-button {
+    min-height: 44px;
+  }
+}
+
+/* Item transfer: tablet and mobile layout */
+@media (max-width: 760px) {
+  .transfer-backdrop {
+    align-items: flex-end;
+    padding: 12px;
+  }
+
+  .transfer-dialog {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    padding: 22px 20px;
+    border-radius: 20px;
+  }
+
+  .transfer-dialog h2 {
+    padding-right: 38px;
+    font-size: 22px;
+  }
+
+  .transfer-dialog form {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+
+  .recipient-results {
+    max-height: min(34dvh, 280px);
+  }
+
+  .recipient-option {
+    min-height: 64px;
+  }
+
+  .transfer-dialog .form-actions {
+    position: sticky;
+    bottom: -22px;
+    z-index: 2;
+    margin: 0 -20px -22px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(rgb(255 253 249 / 88%), #fffdf9 30%);
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 520px) {
+  .transfer-backdrop {
+    padding: 0;
+  }
+
+  .transfer-dialog {
+    max-height: 100dvh;
+    padding: 20px 16px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .transfer-dialog .dialog-close {
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .transfer-dialog h2 {
+    font-size: 20px;
+  }
+
+  .transfer-dialog .dialog-intro {
+    font-size: 11px;
+  }
+
+  .transfer-dialog form > label,
+  .transfer-confirmation label {
+    font-size: 11px;
+  }
+
+  .transfer-dialog input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .recipient-results {
+    max-height: min(32dvh, 240px);
+    padding-right: 0;
+  }
+
+  .recipient-option {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 62px;
+    padding: 9px 10px;
+  }
+
+  .recipient-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .recipient-option strong {
+    font-size: 12px;
+  }
+
+  .recipient-option small {
+    font-size: 9px;
+  }
+
+  .recipient-option i {
+    display: none;
+  }
+
+  .transfer-confirmation {
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .transfer-confirmation label {
+    grid-template-columns: 1fr 96px;
+    align-items: center;
+  }
+
+  .transfer-dialog .form-hint {
+    font-size: 9px;
+  }
+
+  .transfer-dialog .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 8px;
+    bottom: -20px;
+    margin: 0 -16px -20px;
+    padding: 11px 16px calc(11px + env(safe-area-inset-bottom));
+  }
+
+  .transfer-dialog .form-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+  }
+
+  .item-detail-dialog .item-detail-actions {
+    grid-template-columns: 1fr;
   }
 }
 

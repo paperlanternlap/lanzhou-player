@@ -25,6 +25,7 @@ export default function ItemDetailModal({
   currentCharacterId,
   onClose,
   onSubmit,
+  onTransfer,
 }) {
   const [showForm, setShowForm] = useState(false)
   const [requestType, setRequestType] = useState(
@@ -141,6 +142,14 @@ export default function ItemDetailModal({
               onClick={() => setShowForm(true)}
             >
               ขอใช้ไอเท็ม
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={!canRequest || item.transferable === false}
+              onClick={onTransfer}
+            >
+              {item.transferable === false ? 'ไอเท็มนี้ห้ามโอน' : 'ส่งให้ผู้เล่น'}
             </button>
           </div>
         ) : (

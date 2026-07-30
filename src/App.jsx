@@ -5,6 +5,7 @@ import FollowerCard from './components/FollowerCard'
 import FollowerMissionModal from './components/FollowerMissionModal'
 import InventoryCard from './components/InventoryCard'
 import ItemDetailModal from './components/ItemDetailModal'
+import ItemTransferModal from './components/ItemTransferModal'
 import PointCard from './components/PointCard'
 import ProfileCard from './components/ProfileCard'
 import PromotionCard from './components/PromotionCard'
@@ -36,6 +37,7 @@ function App() {
   const [shopItems, setShopItems] = useState([])
   const [characterChoices, setCharacterChoices] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
+  const [transferItem, setTransferItem] = useState(null)
   const [missionFollower, setMissionFollower] = useState(null)
 
   const loadCharacter = useCallback(async () => {
@@ -625,6 +627,23 @@ function App() {
           currentCharacterId={characterId}
           onClose={() => setSelectedItem(null)}
           onSubmit={handleRequestItem}
+          onTransfer={() => {
+            setTransferItem(selectedItem)
+            setSelectedItem(null)
+          }}
+        />
+      )}
+
+      {transferItem && (
+        <ItemTransferModal
+          item={transferItem}
+          currentCharacterId={characterId}
+          onClose={() => setTransferItem(null)}
+          onTransferred={async () => {
+            setTransferItem(null)
+            await Promise.all([loadInventory(), loadActivities()])
+            alert('ส่งไอเท็มเรียบร้อยแล้ว')
+          }}
         />
       )}
 
