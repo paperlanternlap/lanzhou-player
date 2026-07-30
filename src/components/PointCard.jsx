@@ -19,9 +19,7 @@ export default function PointCard({ character, onOpenExchange, onOpenFavorExchan
               aria-label="แลก RP เป็นโปรดปราน"
               title="แลก RP เป็นโปรดปราน"
               onClick={() => onOpenFavorExchange?.()}
-            >
-              +
-            </button>
+            />
           </div>
           <strong>{formatNumber(character?.favor)}</strong>
           <small>คะแนนเลื่อนขั้น</small>

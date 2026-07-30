@@ -40,7 +40,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -53,7 +55,9 @@ button:disabled {
 }
 
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid rgb(132 54 50 / 35%);
   outline-offset: 2px;
 }
@@ -72,7 +76,7 @@ input:focus-visible {
   top: 0;
   min-height: 62px;
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
   padding: 9px max(18px, calc((100vw - 1580px) / 2));
@@ -129,6 +133,22 @@ input:focus-visible {
 
 .topbar-copy strong {
   font-size: 13px;
+}
+
+.topbar-logout {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--wine);
+  background: #fffdf9;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.topbar-logout:hover {
+  border-color: var(--wine);
+  background: var(--wine-soft);
 }
 
 .player-dashboard {
@@ -348,10 +368,6 @@ input:focus-visible {
   content: "•";
 }
 
-.profile-logout {
-  margin: 11px 0 0 75px;
-}
-
 .score-panel {
   padding: 12px;
 }
@@ -399,18 +415,32 @@ input:focus-visible {
 }
 
 .score-tile__heading button {
-  width: 18px;
-  height: 18px;
-  display: grid;
-  place-items: center;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   padding: 0;
   border: 1px solid rgb(139 70 66 / 35%);
   border-radius: 50%;
   color: #8b4642;
-  background: rgb(255 255 255 / 58%);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
+  background: rgb(255 255 255 / 72%);
+}
+
+.score-tile__heading button::before,
+.score-tile__heading button::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 1.5px;
+  border-radius: 99px;
+  background: currentColor;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.score-tile__heading button::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .score-tile__heading button:hover {
@@ -839,6 +869,106 @@ input:focus-visible {
   font-size: 10px;
 }
 
+.role-submission-panel {
+  flex: 0 0 auto;
+}
+
+.role-submission-panel.is-empty .panel-heading {
+  margin-bottom: 0;
+}
+
+.role-submission-list {
+  display: grid;
+  gap: 7px;
+}
+
+.role-submission-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-soft);
+}
+
+.role-submission-row > div {
+  min-width: 0;
+}
+
+.role-submission-row a {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-submission-row a:hover {
+  color: var(--wine);
+  text-decoration: underline;
+}
+
+.role-submission-row time,
+.role-submission-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.role-submission-row small,
+.role-submission-row p {
+  grid-column: 1 / -1;
+}
+
+.role-submission-row p {
+  margin: 2px 0 0;
+  color: var(--wine);
+  font-size: 8px;
+}
+
+.role-status {
+  align-self: start;
+  padding: 3px 6px;
+  border-radius: 99px;
+  color: #776d63;
+  background: #eee7dd;
+  font-size: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.role-status.approved {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.role-status.revision {
+  color: #8a671f;
+  background: #fbf0d7;
+}
+
+.role-status.rejected {
+  color: var(--wine);
+  background: var(--wine-soft);
+}
+
+.role-submission-empty {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 2px 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.role-submission-empty strong {
+  color: var(--ink);
+  font-size: 10px;
+}
+
 .empty-state span {
   margin-top: 3px;
   font-size: 8px;
@@ -979,6 +1109,77 @@ input:focus-visible {
 .dialog-submit {
   width: 100%;
   margin-top: 13px;
+}
+
+.role-submission-dialog {
+  width: min(560px, 100%);
+}
+
+.role-submission-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.role-submission-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.role-submission-form label:nth-of-type(n + 2) {
+  grid-column: 1 / -1;
+}
+
+.role-submission-form input,
+.role-submission-form select,
+.role-submission-form textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  background: white;
+  resize: vertical;
+}
+
+.select-control {
+  position: relative;
+  display: block;
+}
+
+.select-control select {
+  appearance: none;
+  padding-right: 42px;
+}
+
+.select-control::after {
+  position: absolute;
+  top: 50%;
+  right: 17px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  content: "";
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+}
+
+.role-submission-form .form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.role-submission-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .item-detail-dialog {
@@ -1318,11 +1519,12 @@ input:focus-visible {
   width: min(980px, 100%);
   height: min(720px, calc(100vh - 32px));
   padding: 26px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .shop-panel {
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -1333,17 +1535,17 @@ input:focus-visible {
 
 .shop-intro h2 {
   margin: 0;
-  font-size: 23px;
+  font-size: 26px;
 }
 
 .shop-intro p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .shop-intro .eyebrow {
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .shop-toolbar {
@@ -1361,7 +1563,7 @@ input:focus-visible {
 
 .shop-tabs button {
   min-height: 40px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .shop-follower-filter {
@@ -1373,7 +1575,7 @@ input:focus-visible {
 
 .shop-follower-filter > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -1385,23 +1587,23 @@ input:focus-visible {
   border-radius: 9px;
   color: var(--ink);
   background: white;
-  font: 500 11px "Noto Sans Thai", "Leelawadee UI", sans-serif;
+  font: 500 13px "Noto Sans Thai", "Leelawadee UI", sans-serif;
 }
 
 .shop-grid {
   min-height: 0;
-  flex: 1;
+  flex: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
   gap: 12px;
   margin-top: 14px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .shop-card {
   min-width: 0;
-  min-height: 190px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -1426,7 +1628,7 @@ input:focus-visible {
   border-radius: 99px;
   color: var(--green);
   background: var(--green-soft);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -1437,13 +1639,13 @@ input:focus-visible {
 
 .shop-card__top small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .shop-card h3 {
   margin: 9px 0 0;
   color: var(--ink);
-  font: 700 17px "Noto Serif Thai", Georgia, serif;
+  font: 700 20px "Noto Serif Thai", Georgia, serif;
 }
 
 .shop-card > p {
@@ -1452,16 +1654,16 @@ input:focus-visible {
   margin: 4px 0 0;
   overflow: hidden;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .fulfillment-note {
-  margin-top: 9px;
+  margin: 9px 0 12px;
   color: #8f7961;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .shop-talents {
@@ -1469,7 +1671,7 @@ input:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-top: 9px;
+  margin: 9px 0 12px;
 }
 
 .shop-talents > span {
@@ -1480,7 +1682,7 @@ input:focus-visible {
   border-radius: 99px;
   color: #55724e;
   background: #e7f0e3;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .shop-talents > span.negative {
@@ -1494,7 +1696,7 @@ input:focus-visible {
 
 .shop-talents small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .shop-card__footer {
@@ -1509,19 +1711,19 @@ input:focus-visible {
 
 .shop-card__footer > strong {
   color: var(--wine);
-  font: 700 19px "Noto Serif Thai", Georgia, serif;
+  font: 700 23px "Noto Serif Thai", Georgia, serif;
 }
 
 .shop-card__footer em {
   color: var(--muted);
-  font: 600 10px "Noto Sans Thai", sans-serif;
+  font: 600 12px "Noto Sans Thai", sans-serif;
   font-style: normal;
 }
 
 .shop-card__footer .compact-button {
   min-height: 38px;
   padding: 0 15px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .shop-empty {
@@ -1536,7 +1738,7 @@ input:focus-visible {
   gap: 12px;
   padding-top: 11px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .shop-pagination > div {
@@ -1570,7 +1772,7 @@ input:focus-visible {
 .shop-pagination strong {
   min-width: 42px;
   color: var(--ink);
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -1647,8 +1849,8 @@ input:focus-visible {
 .login-card {
   position: relative;
   z-index: 1;
-  width: min(390px, 100%);
-  padding: 28px;
+  width: min(400px, 100%);
+  padding: 32px;
   border: 1px solid rgb(218 194 154 / 56%);
   border-radius: 18px;
   background: rgb(255 252 246 / 97%);
@@ -1661,30 +1863,31 @@ input:focus-visible {
   padding-bottom: 17px;
   border-bottom: 1px solid var(--line);
   color: var(--wine);
-  font: 700 15px "Noto Serif Thai", Georgia, serif;
+  font: 700 18px "Noto Serif Thai", Georgia, serif;
 }
 
 .login-brand small {
   margin-top: 2px;
   color: #9b8871;
-  font: 600 7px "Noto Sans Thai", sans-serif;
+  font: 600 9px "Noto Sans Thai", sans-serif;
   letter-spacing: 1.7px;
 }
 
 .login-heading {
-  margin-top: 22px;
+  margin-top: 26px;
 }
 
 .login-heading h1 {
   margin: 0;
   color: var(--ink);
-  font: 700 22px "Noto Serif Thai", Georgia, serif;
+  font: 700 28px/1.35 "Noto Serif Thai", Georgia, serif;
 }
 
 .login-heading p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .login-card form {
@@ -1695,16 +1898,17 @@ input:focus-visible {
   display: block;
   margin-bottom: 5px;
   color: var(--ink);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .login-card input {
   width: 100%;
-  height: 41px;
-  padding: 0 12px;
+  height: 48px;
+  padding: 0 14px;
   border: 1px solid var(--line-strong);
   border-radius: 9px;
+  font-size: 13px;
   color: var(--ink);
   background: white;
   font-size: 11px;
@@ -1722,20 +1926,139 @@ input:focus-visible {
 
 .login-button {
   width: 100%;
+  min-height: 48px;
   margin-top: 11px;
+  font-size: 13px;
 }
 
 .login-help {
   display: block;
   margin-top: 17px;
   color: #9b9187;
-  font-size: 7px;
+  font-size: 9px;
   text-align: center;
+}
+
+/* Readability pass for dashboard content. */
+.app-brand small {
+  font-size: 9px;
+}
+
+.topbar-copy span {
+  font-size: 11px;
+}
+
+.topbar-copy strong {
+  font-size: 15px;
+}
+
+.player-dashboard .eyebrow {
+  font-size: 10px;
+}
+
+.player-dashboard .panel-heading h2 {
+  font-size: 17px;
+}
+
+.player-dashboard :is(.primary-button, .secondary-button, .row-action) {
+  font-size: 12px;
+}
+
+.profile-copy p {
+  font-size: 11px;
+}
+
+.profile-details,
+.score-tile > span,
+.score-tile__heading {
+  font-size: 10px;
+}
+
+.score-tile small {
+  font-size: 9px;
+}
+
+.promotion-route {
+  font-size: 11px;
+}
+
+.promotion-meta {
+  font-size: 10px;
+}
+
+.segmented-control button {
+  font-size: 11px;
+}
+
+.status-pill {
+  font-size: 9px;
+}
+
+.follower-title h3 {
+  font-size: 14px;
+}
+
+.follower-copy p {
+  font-size: 11px;
+}
+
+.follower-skill {
+  font-size: 10px;
+}
+
+.pagination span {
+  font-size: 10px;
+}
+
+.inventory-row {
+  font-size: 11px;
+}
+
+.inventory-quantity i {
+  font-size: 9px;
+}
+
+.activity-row h3 {
+  font-size: 12px;
+}
+
+.activity-row p {
+  font-size: 10px;
+}
+
+.activity-row time {
+  font-size: 9px;
+}
+
+.role-submission-row a {
+  font-size: 12px;
+}
+
+.role-submission-row time,
+.role-submission-row small,
+.role-submission-row p,
+.role-status,
+.role-submission-empty {
+  font-size: 10px;
+}
+
+.role-submission-empty strong {
+  font-size: 12px;
+}
+
+.role-submission-form label {
+  font-size: 11px;
+}
+
+.role-submission-form input,
+.role-submission-form select,
+.role-submission-form textarea {
+  font-size: 12px;
 }
 
 @media (max-width: 1180px) {
   .app-topbar {
-    grid-template-columns: 220px 1fr;
+    grid-template-columns: 1fr auto;
   }
 
   .player-dashboard {
@@ -1769,8 +2092,15 @@ input:focus-visible {
   }
 
   .dashboard-main > .panel,
-  .dashboard-activity > .panel {
+  .dashboard-activity > .activity-panel {
     height: 100%;
+  }
+
+  .dashboard-activity > .activity-panel {
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
   }
 
   .follower-panel {
@@ -1782,7 +2112,7 @@ input:focus-visible {
 @media (max-width: 760px) {
   .app-topbar {
     position: static;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
     padding: 9px 12px;
   }
 

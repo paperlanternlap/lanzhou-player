@@ -8,6 +8,7 @@ import ItemDetailModal from './components/ItemDetailModal'
 import PointCard from './components/PointCard'
 import ProfileCard from './components/ProfileCard'
 import PromotionCard from './components/PromotionCard'
+import RoleSubmissionCard from './components/RoleSubmissionCard'
 import ShopPanel from './components/ShopPlanel'
 import { useAuth } from './hooks/useAuth'
 import DashboardLayout from './layouts/DashboardLayout'
@@ -27,6 +28,8 @@ function App() {
   const [character, setCharacter] = useState(null)
   const [inventory, setInventory] = useState([])
   const [activities, setActivities] = useState([])
+  const [roleSubmissions, setRoleSubmissions] = useState([])
+  const [submittingRole, setSubmittingRole] = useState(false)
   const [followers, setFollowers] = useState([])
   const [explorationLocations, setExplorationLocations] = useState([])
   const [shopFollowers, setShopFollowers] = useState([])
@@ -88,6 +91,15 @@ function App() {
       .order('created_at', { ascending: false })
     if (error) console.error(error)
     else setActivities(data || [])
+  }, [characterId])
+
+  const loadRoleSubmissions = useCallback(async () => {
+    if (!characterId) return
+    const { data, error } = await supabase.rpc('get_player_rp_submissions', {
+      p_character_id: characterId,
+    })
+    if (error) console.error(error)
+    else setRoleSubmissions(data || [])
   }, [characterId])
 
   const loadFollowers = useCallback(async () => {
@@ -186,6 +198,7 @@ function App() {
         loadCharacter(),
         loadInventory(),
         loadActivities(),
+        loadRoleSubmissions(),
         loadFollowers(),
         loadExplorationLocations(),
         loadShopFollowers(),
@@ -197,6 +210,7 @@ function App() {
   }, [
     characterId,
     loadActivities,
+    loadRoleSubmissions,
     loadCharacter,
     loadFollowers,
     loadInventory,
@@ -389,6 +403,36 @@ function App() {
     return result
   }
 
+  async function handleSubmitRole(values) {
+    if (submittingRole) {
+      return { ok: false, message: 'กำลังส่งรายการ กรุณารอสักครู่' }
+    }
+
+    setSubmittingRole(true)
+    const { error } = await supabase.rpc('submit_player_rp', {
+      p_character_id: characterId,
+      p_role_url: values.roleUrl,
+      p_submission_type: values.submissionType,
+      p_participant_names: values.participantNames || null,
+      p_player_note: values.playerNote || null,
+    })
+    setSubmittingRole(false)
+
+    if (error) {
+      return {
+        ok: false,
+        message: error.code === '23505' || error.message?.includes('duplicate')
+          ? 'ลิงก์นี้ถูกส่งเข้าคิวตรวจแล้ว'
+          : error.message?.includes('submit_player_rp')
+            ? 'ยังไม่ได้รัน migration สำหรับระบบส่งผลงาน'
+            : 'ส่งผลงานไม่สำเร็จ กรุณาลองอีกครั้ง',
+      }
+    }
+
+    await loadRoleSubmissions()
+    return { ok: true }
+  }
+
   async function handlePromote() {
     if (!character?.next_position) {
       alert('ตำแหน่งนี้ไม่สามารถเลื่อนขั้นได้แล้ว')
@@ -453,22 +497,21 @@ function App() {
             <small>PALACE LEDGER</small>
           </div>
         </div>
-        <div className="topbar-copy">
-          <span>พื้นที่ของผู้เล่น</span>
-          <strong>ภาพรวมตำหนัก</strong>
-        </div>
+        <button type="button" className="topbar-logout" onClick={logout}>
+          ออกจากระบบ
+        </button>
       </header>
 
       <DashboardLayout
         left={
           <>
-            <ProfileCard character={character} onLogout={logout} />
+            <ProfileCard character={character} />
+            <PromotionCard character={character} onPromote={handlePromote} />
             <PointCard
               character={character}
               onOpenExchange={() => setShowShop(true)}
               onOpenFavorExchange={() => setShowFavorExchange(true)}
             />
-            <PromotionCard character={character} onPromote={handlePromote} />
           </>
         }
         center={
@@ -481,7 +524,16 @@ function App() {
             <InventoryCard inventory={inventory} onSelectItem={setSelectedItem} />
           </>
         }
-        right={<ActivityCard activities={activities} />}
+        right={
+          <>
+            <RoleSubmissionCard
+              submissions={roleSubmissions}
+              loading={submittingRole}
+              onSubmit={handleSubmitRole}
+            />
+            <ActivityCard activities={activities} />
+          </>
+        }
       />
 
       {showFavorExchange && (

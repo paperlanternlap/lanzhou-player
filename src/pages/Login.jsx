@@ -42,9 +42,7 @@ export default function Login() {
           <small>LANZHOU PALACE LEDGER</small>
         </div>
         <div className="login-heading">
-          <span className="eyebrow">PLAYER PORTAL</span>
-          <h1>เข้าสู่ตำหนัก</h1>
-          <p>กรอกชื่อผู้ใช้ของตัวละครเพื่อดูคะแนน คลัง และภารกิจ</p>
+          <h1>ยินดีต้อนรับสู่หลันโจว</h1>
         </div>
         <form onSubmit={handleLogin}>
           <label htmlFor="username">ชื่อผู้ใช้</label>
@@ -52,7 +50,7 @@ export default function Login() {
             id="username"
             type="text"
             autoComplete="username"
-            placeholder="กรอก Username"
+            placeholder="Username"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
@@ -62,7 +60,7 @@ export default function Login() {
             type="submit"
             disabled={loading || !username.trim()}
           >
-            {loading ? 'กำลังเข้าสู่ตำหนัก...' : 'เข้าสู่ตำหนัก'}
+            {loading ? 'กำลังเข้าสู่ตำหนัก...' : 'เข้าตำหนัก'}
           </button>
         </form>
         <small className="login-help">หากเข้าใช้งานไม่ได้ กรุณาติดต่อสต๊าฟคอมมู</small>

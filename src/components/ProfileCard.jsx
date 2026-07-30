@@ -1,13 +1,4 @@
-import { useNavigate } from 'react-router-dom'
-
-export default function ProfileCard({ character, onLogout }) {
-  const navigate = useNavigate()
-
-  function handleLogout() {
-    onLogout?.()
-    navigate('/login', { replace: true })
-  }
-
+export default function ProfileCard({ character }) {
   return (
     <section className="panel profile-card">
       <div className="profile-card__main">
@@ -27,9 +18,6 @@ export default function ProfileCard({ character, onLogout }) {
           </div>
         </div>
       </div>
-      <button className="text-button profile-logout" type="button" onClick={handleLogout}>
-        ออกจากตำหนัก
-      </button>
     </section>
   )
 }
