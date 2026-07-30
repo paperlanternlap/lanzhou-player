@@ -13,6 +13,7 @@ import { useAuth } from './hooks/useAuth'
 import DashboardLayout from './layouts/DashboardLayout'
 import Login from './pages/Login'
 import { supabase } from './supabase'
+import { canFollowerAccessLocation } from './utils/followerExploration'
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString('th-TH')
@@ -254,27 +255,51 @@ function App() {
       return
     }
     const readyFollowers = followers.filter((follower) => follower.status === 'idle')
+    const dispatchPlans = readyFollowers.map((follower) => ({
+      follower,
+      locations: explorationLocations.filter((location) =>
+        canFollowerAccessLocation(follower, location),
+      ),
+    }))
+    const eligiblePlans = dispatchPlans.filter((plan) => plan.locations.length)
+    const noAccessCount = dispatchPlans.length - eligiblePlans.length
+    if (!eligiblePlans.length) {
+      alert('ยังไม่มีผู้ติดตามคนใดที่ได้รับสิทธิ์เข้าถึงพื้นที่สำรวจ')
+      return
+    }
     const results = await Promise.all(
-      readyFollowers.map((follower) => {
-        const bestLocation = explorationLocations.reduce((best, location) => {
-          const score = (follower.talents || [])
+      eligiblePlans.map(({ follower, locations }) => {
+        const bestLocation = locations.reduce((best, location) => {
+          const talentScore = (follower.talents || [])
             .filter((talent) => location.tags?.includes(talent.talent_key))
             .reduce((total, talent) => total + talent.modifier_percent, 0)
-          return !best || score > best.score ? { location, score } : best
+          const successChance = Math.max(
+            5,
+            Math.min(
+              95,
+              Number(location.base_success_percent ?? 60) + talentScore,
+            ),
+          )
+          return !best || successChance > best.successChance
+            ? { location, successChance }
+            : best
         }, null)?.location
         return supabase.rpc('start_follower_exploration', {
           p_character_id: characterId,
           p_follower_id: follower.id,
-          p_location_id: bestLocation?.id || explorationLocations[0]?.id,
+          p_location_id: bestLocation.id,
           p_objective: 'สำรวจและรวบรวมข้อมูลทั่วไป',
         })
       }),
     )
     const failedCount = results.filter((result) => result.error).length
-    if (failedCount) {
-      alert(`ส่งสำรวจไม่สำเร็จ ${failedCount} คน อาจใช้สิทธิ์ประจำสัปดาห์ครบแล้ว`)
+    if (failedCount || noAccessCount) {
+      alert(
+        `ส่งสำรวจไม่สำเร็จ ${failedCount + noAccessCount} คน` +
+          (noAccessCount ? ` · ไม่มีพื้นที่เข้าถึง ${noAccessCount} คน` : ''),
+      )
     }
-    if (failedCount === readyFollowers.length) {
+    if (failedCount === eligiblePlans.length) {
       return
     }
     await Promise.all([loadFollowers(), loadActivities()])

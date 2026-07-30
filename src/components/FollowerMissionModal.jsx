@@ -1,15 +1,20 @@
 import { useMemo, useState } from 'react'
+import { canFollowerAccessLocation } from '../utils/followerExploration'
 
 function getSuitability(follower, location) {
   const matchedTalents = (follower.talents || []).filter((talent) =>
     location.tags?.includes(talent.talent_key),
   )
+  const score = matchedTalents.reduce(
+    (total, talent) => total + Number(talent.modifier_percent || 0),
+    0,
+  )
+  const baseChance = Number(location.base_success_percent ?? 60)
   return {
     matchedTalents,
-    score: matchedTalents.reduce(
-      (total, talent) => total + Number(talent.modifier_percent || 0),
-      0,
-    ),
+    score,
+    baseChance,
+    successChance: Math.max(5, Math.min(95, baseChance + score)),
   }
 }
 
@@ -21,10 +26,12 @@ export default function FollowerMissionModal({
 }) {
   const preparedLocations = useMemo(
     () =>
-      locations.map((location) => ({
-        ...location,
-        suitability: getSuitability(follower, location),
-      })),
+      locations
+        .filter((location) => canFollowerAccessLocation(follower, location))
+        .map((location) => ({
+          ...location,
+          suitability: getSuitability(follower, location),
+        })),
     [follower, locations],
   )
   const bestLocation = useMemo(
@@ -76,6 +83,8 @@ export default function FollowerMissionModal({
           ? 'ผู้ติดตามคนนี้ใช้สิทธิ์สำรวจประจำสัปดาห์ครบแล้ว'
           : result.error.message?.includes('already on a mission')
             ? 'ผู้ติดตามคนนี้กำลังทำภารกิจอยู่'
+            : result.error.message?.includes('cannot access')
+              ? 'ผู้ติดตามคนนี้ไม่มีสิทธิ์เข้าถึงพื้นที่ดังกล่าว'
             : result.error.message?.includes('location')
               ? 'พื้นที่นี้ยังไม่พร้อมใช้งาน กรุณาเลือกพื้นที่ใหม่'
               : 'ส่งสำรวจไม่สำเร็จ กรุณาลองอีกครั้ง',
@@ -98,7 +107,7 @@ export default function FollowerMissionModal({
         <span className="eyebrow">ภารกิจผู้ติดตาม</span>
         <h2 id="mission-dialog-title">ส่ง {follower.name} สำรวจ</h2>
         <p className="dialog-intro">
-          เลือกพื้นที่ในวังและระบุสิ่งที่ต้องการให้ตามหา ผลภารกิจจะขึ้นในกิจกรรมล่าสุด
+          เลือกจากพื้นที่ที่ผู้ติดตามคนนี้ได้รับสิทธิ์เข้าถึง แล้วระบุสิ่งที่ต้องการให้ตามหา
         </p>
 
         <div className="mission-follower">
@@ -112,9 +121,8 @@ export default function FollowerMissionModal({
           <div>
             <strong>{follower.name}</strong>
             <span>
-              {(follower.talents || []).length
-                ? `${follower.talents.length} Talent สำหรับการสำรวจ`
-                : 'ยังไม่ได้กำหนด Talent'}
+              เข้าถึงได้ {preparedLocations.length} พื้นที่ ·{' '}
+              {(follower.talents || []).length} Talent
             </span>
           </div>
         </div>
@@ -128,22 +136,27 @@ export default function FollowerMissionModal({
               onChange={(event) => setLocationId(event.target.value)}
             >
               {!preparedLocations.length && (
-                <option value="">ยังไม่มีพื้นที่สำรวจ</option>
+                <option value="">ผู้ติดตามคนนี้ยังไม่มีพื้นที่ที่เข้าถึงได้</option>
               )}
               {Object.entries(categories).map(([category, categoryLocations]) => (
                 <optgroup key={category} label={category}>
                   {categoryLocations.map((location) => (
                     <option key={location.id} value={location.id}>
                       เขต {location.zone_number} · {location.short_name}
-                      {location.suitability.score
-                        ? ` (${location.suitability.score > 0 ? '+' : ''}${location.suitability.score}%)`
-                        : ''}
+                      {` · โอกาส ${location.suitability.successChance}%`}
                     </option>
                   ))}
                 </optgroup>
               ))}
             </select>
           </label>
+
+          {!preparedLocations.length && (
+            <div className="mission-access-empty">
+              <strong>ยังส่งสำรวจไม่ได้</strong>
+              <span>ให้สต๊าฟเพิ่มพื้นที่เข้าถึงในข้อมูลผู้ติดตามก่อน</span>
+            </div>
+          )}
 
           {selectedLocation && (
             <div className="mission-location-preview">
@@ -161,11 +174,15 @@ export default function FollowerMissionModal({
                       : ''
                 }`}
               >
-                <span>ความเหมาะสม</span>
+                <span>โอกาสสำเร็จ</span>
                 <strong>
+                  {selectedLocation.suitability.successChance}%
+                </strong>
+                <small>
+                  พื้นฐาน {selectedLocation.suitability.baseChance}% · Talent{' '}
                   {selectedLocation.suitability.score > 0 ? '+' : ''}
                   {selectedLocation.suitability.score}%
-                </strong>
+                </small>
               </div>
               <div className="mission-talent-matches">
                 {selectedLocation.suitability.matchedTalents.length ? (

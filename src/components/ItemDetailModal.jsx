@@ -40,21 +40,33 @@ export default function ItemDetailModal({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const needsTarget = item.requires_target || requestType === 'target'
+  const usesCurrentCharacter = requestType === 'self'
+  const needsTargetSelection =
+    !usesCurrentCharacter &&
+    (item.requires_target || requestType === 'target')
+  const currentCharacter = characters.find(
+    (character) => String(character.id) === String(currentCharacterId),
+  )
   const canRequest = Boolean(item.item_id)
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (!desiredEffect.trim() || (needsTarget && !targetCharacterId)) return
+    if (
+      !desiredEffect.trim() ||
+      (needsTargetSelection && !targetCharacterId)
+    ) return
 
     setSubmitting(true)
     setError('')
+    const effectiveTargetCharacterId = usesCurrentCharacter
+      ? Number(currentCharacterId)
+      : targetCharacterId
+        ? Number(targetCharacterId)
+        : null
     const result = await onSubmit({
       itemId: item.item_id,
       requestType,
-      targetCharacterId: targetCharacterId
-        ? Number(targetCharacterId)
-        : null,
+      targetCharacterId: effectiveTargetCharacterId,
       actorName: actorName.trim(),
       useChannel: useChannel.trim(),
       desiredEffect: desiredEffect.trim(),
@@ -136,14 +148,29 @@ export default function ItemDetailModal({
             <div className="form-grid">
               <label>
                 รูปแบบการใช้
-                <select value={requestType} onChange={(event) => setRequestType(event.target.value)}>
+                <select
+                  value={requestType}
+                  onChange={(event) => {
+                    setRequestType(event.target.value)
+                    setTargetCharacterId('')
+                  }}
+                >
                   {requestTypes.map((type) => (
                     <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
               </label>
 
-              {needsTarget && (
+              {usesCurrentCharacter ? (
+                <label>
+                  ตัวละครเป้าหมาย
+                  <select value={String(currentCharacterId)} disabled>
+                    <option value={String(currentCharacterId)}>
+                      {currentCharacter?.character_name || 'ตัวละครปัจจุบัน'}
+                    </option>
+                  </select>
+                </label>
+              ) : needsTargetSelection ? (
                 <label>
                   ตัวละครเป้าหมาย
                   <select
@@ -153,7 +180,10 @@ export default function ItemDetailModal({
                   >
                     <option value="">เลือกตัวละคร</option>
                     {characters
-                      .filter((character) => character.id !== currentCharacterId)
+                      .filter(
+                        (character) =>
+                          String(character.id) !== String(currentCharacterId),
+                      )
                       .map((character) => (
                         <option key={character.id} value={character.id}>
                           {character.character_name}
@@ -161,7 +191,7 @@ export default function ItemDetailModal({
                       ))}
                   </select>
                 </label>
-              )}
+              ) : null}
             </div>
 
             <label>
@@ -235,7 +265,11 @@ export default function ItemDetailModal({
               <button
                 className="primary-button"
                 type="submit"
-                disabled={submitting || !desiredEffect.trim() || (needsTarget && !targetCharacterId)}
+                disabled={
+                  submitting ||
+                  !desiredEffect.trim() ||
+                  (needsTargetSelection && !targetCharacterId)
+                }
               >
                 {submitting ? 'กำลังส่งคำร้อง...' : 'ยืนยันขอใช้ไอเท็ม'}
               </button>
