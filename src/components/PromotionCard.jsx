@@ -10,6 +10,7 @@ export default function PromotionCard({ character, onPromote }) {
     ? Math.min((currentFavor / requiredFavor) * 100, 100)
     : 0
   const remaining = Math.max(requiredFavor - currentFavor, 0)
+  const promotionLocked = Boolean(character?.promotion_locked)
 
   return (
     <section className="panel promotion-card">
@@ -21,7 +22,12 @@ export default function PromotionCard({ character, onPromote }) {
         {nextPosition && <span className="soft-badge">{Math.round(progress)}%</span>}
       </div>
 
-      {nextPosition ? (
+      {promotionLocked ? (
+        <div className="promotion-locked">
+          <strong>ระงับสิทธิ์เลื่อนขั้นตามระบบโปรดปราน</strong>
+          <span>{character?.promotion_lock_reason || 'การเปลี่ยนตำแหน่งครั้งต่อไปต้องได้รับพระราชโองการหรือการอนุมัติจากแม่งาน'}</span>
+        </div>
+      ) : nextPosition ? (
         <>
           <div className="promotion-route">
             <span>{character?.position}</span>

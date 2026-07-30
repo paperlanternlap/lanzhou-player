@@ -128,6 +128,12 @@ export default function ItemDetailModal({
           </div>
         </div>
 
+        {item.requires_roll && (
+          <p className="item-roll-note">
+            การทอยเป็นแบบหลังไมค์กับแม่งาน โดยผู้ได้รับผลจากไอเท็มเป็นผู้ทอยตามข้อความที่แม่งานแจ้ง
+          </p>
+        )}
+
         {!showForm ? (
           <div className="item-detail-actions">
             {!canRequest && (

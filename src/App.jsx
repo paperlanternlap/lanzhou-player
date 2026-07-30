@@ -436,6 +436,10 @@ function App() {
   }
 
   async function handlePromote() {
+    if (character?.promotion_locked) {
+      alert('ตัวละครนี้ถูกระงับสิทธิ์เลื่อนขั้นด้วยโปรดปราน กรุณาติดต่อแม่งาน')
+      return
+    }
     if (!character?.next_position) {
       alert('ตำแหน่งนี้ไม่สามารถเลื่อนขั้นได้แล้ว')
       return
