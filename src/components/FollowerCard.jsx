@@ -1,202 +1,158 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-export default function FollowerCard({ followers = [], onStartExploration, onStartAllExplorations }) {
+const PAGE_SIZE = 5
+
+const statusLabels = {
+  idle: 'พร้อมรับภารกิจ',
+  exploring: 'กำลังสำรวจ',
+  unavailable: 'ยังไม่พร้อม',
+}
+
+export default function FollowerCard({
+  followers = [],
+  onStartExploration,
+  onStartAllExplorations,
+}) {
   const [page, setPage] = useState(1)
   const [activeFilter, setActiveFilter] = useState('all')
 
-  const ITEMS_PER_PAGE = 4
+  const filteredFollowers = useMemo(() => {
+    if (activeFilter === 'idle') {
+      return followers.filter((follower) => follower.status === 'idle')
+    }
+    if (activeFilter === 'exploring') {
+      return followers.filter((follower) => follower.status === 'exploring')
+    }
+    return followers
+  }, [activeFilter, followers])
 
-  const filteredFollowers =
-    activeFilter === 'exploring'
-      ? followers.filter((follower) => follower.status === 'exploring')
-      : followers
-
-  const totalPages = Math.max(1, Math.ceil(filteredFollowers.length / ITEMS_PER_PAGE))
-
+  const totalPages = Math.max(1, Math.ceil(filteredFollowers.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
   const paginatedFollowers = filteredFollowers.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
   )
+  const readyCount = followers.filter((follower) => follower.status === 'idle').length
+
+  function chooseFilter(filter) {
+    setActiveFilter(filter)
+    setPage(1)
+  }
+
   return (
-    <div
-      style={{
-        background: '#ffffff',
-        border: '2px solid #111',
-        borderRadius: '0',
-        padding: '12px',
-        marginTop: '12px',
-        height: '100%',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: '2px solid #111',
-          paddingBottom: '6px',
-          marginBottom: '8px',
-        }}
-      >
-        <div style={{ fontWeight: 'bold', fontSize: '15px' }}>
-          ผู้ติดตาม • {filteredFollowers.length} คน
+    <section className="panel follower-panel">
+      <div className="panel-heading follower-heading">
+        <div>
+          <span className="eyebrow">จัดการภารกิจ</span>
+          <h2>ผู้ติดตาม <small>{followers.length} คน</small></h2>
         </div>
-
         <button
+          className="secondary-button compact-button"
+          type="button"
+          disabled={!readyCount}
           onClick={() => onStartAllExplorations?.()}
-          style={{
-            border: '1px solid #111',
-            background: '#111',
-            color: '#fff',
-            padding: '4px 10px',
-            cursor: 'pointer',
-            fontSize: '12px',
-          }}
         >
-          ส่งทั้งหมด
+          ส่งพร้อมกัน {readyCount ? `(${readyCount})` : ''}
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-        <button
-          onClick={() => {
-            setActiveFilter('all')
-            setPage(1)
-          }}
-          style={{
-            border: '1px solid #111',
-            background: activeFilter === 'all' ? '#111' : '#fff',
-            color: activeFilter === 'all' ? '#fff' : '#111',
-            padding: '4px 10px',
-            fontSize: '12px',
-            cursor: 'pointer',
-          }}
-        >
-          ทั้งหมด
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveFilter('exploring')
-            setPage(1)
-          }}
-          style={{
-            border: '1px solid #111',
-            background: activeFilter === 'exploring' ? '#111' : '#fff',
-            color: activeFilter === 'exploring' ? '#fff' : '#111',
-            padding: '4px 10px',
-            fontSize: '12px',
-            cursor: 'pointer',
-          }}
-        >
-          กำลังสำรวจ
-        </button>
-      </div>
-      {paginatedFollowers.map((follower) => (
-        <div
-          key={follower.id}
-          style={{
-            border: '1px solid #111',
-            borderRadius: '0',
-            padding: '10px',
-            marginTop: '8px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <>
-            <div>
-              <div style={{ fontWeight: 'bold' }}>
-                {follower.name}
-              </div>
-
-              <div style={{ color: '#555', marginTop: '4px', fontSize: '12px' }}>
-                {follower.description}
-              </div>
-
-              <div style={{ color: '#777', marginTop: '4px', fontSize: '12px' }}>
-                ★{'★'.repeat(follower.skill_value || 1)}
-              </div>
-            </div>
-
-            <button
-              style={{
-                border: '1px solid #111',
-                background: follower.status === 'exploring' ? '#f5f5f5' : '#fff',
-                borderRadius: '0',
-                padding: '6px 12px',
-                cursor: follower.status === 'exploring' ? 'default' : 'pointer',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                whiteSpace: 'nowrap',
-                opacity: follower.status === 'exploring' ? 0.7 : 1,
-              }}
-              onClick={() => {
-                if (follower.status !== 'exploring') {
-                  onStartExploration?.(follower.id)
-                }
-              }}
-              disabled={follower.status === 'exploring'}
-            >
-              {follower.status === 'exploring' ? 'สำรวจ...' : 'ส่งสำรวจ'}
-            </button>
-          </>
-        </div>
-      ))}
-      {totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '6px',
-            marginTop: '16px',
-          }}
-        >
+      <div className="segmented-control" aria-label="กรองผู้ติดตาม">
+        {[
+          ['all', 'ทั้งหมด', followers.length],
+          ['idle', 'พร้อมส่ง', readyCount],
+          ['exploring', 'กำลังสำรวจ', followers.length - readyCount],
+        ].map(([id, label, count]) => (
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            style={{
-              border: '1px solid #111',
-              background: '#fff',
-              width: '28px',
-              height: '28px',
-              cursor: 'pointer',
-            }}
+            key={id}
+            type="button"
+            className={activeFilter === id ? 'active' : ''}
+            onClick={() => chooseFilter(id)}
           >
-            {'<'}
+            {label} <span>{count}</span>
           </button>
+        ))}
+      </div>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              onClick={() => setPage(pageNum)}
-              style={{
-                border: '1px solid #111',
-                width: '28px',
-                height: '28px',
-                cursor: 'pointer',
-                background: page === pageNum ? '#111' : '#fff',
-                color: page === pageNum ? '#fff' : '#111',
-              }}
-            >
-              {pageNum}
-            </button>
-          ))}
+      <div className="follower-list">
+        {paginatedFollowers.length ? paginatedFollowers.map((follower) => {
+          const isExploring = follower.status === 'exploring'
+          const mission = follower.activeMission
+          return (
+            <article className="follower-row" key={follower.id}>
+              <div className="follower-avatar">
+                {follower.image_url ? (
+                  <img src={follower.image_url} alt="" />
+                ) : (
+                  <span>{follower.name?.slice(0, 1) || 'ผ'}</span>
+                )}
+              </div>
+              <div className="follower-copy">
+                <div className="follower-title">
+                  <h3>{follower.name}</h3>
+                  <span className={`status-pill ${isExploring ? 'busy' : 'ready'}`}>
+                    {statusLabels[follower.status] || follower.status}
+                  </span>
+                </div>
+                <p>
+                  {mission
+                    ? `สำรวจ ${mission.destination}${mission.objective ? ` · ${mission.objective}` : ''}`
+                    : follower.description || 'ยังไม่มีรายละเอียด'}
+                </p>
+                <div className="follower-skill">
+                  {follower.talents?.length ? (
+                    <>
+                      <span>{follower.talents[0].label || follower.talents[0].talent_key}</span>
+                      <b>
+                        {follower.talents[0].modifier_percent > 0 ? '+' : ''}
+                        {follower.talents[0].modifier_percent}%
+                      </b>
+                    </>
+                  ) : (
+                    <>
+                      <span>ยังไม่ได้กำหนด Talent</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button
+                className="row-action"
+                type="button"
+                disabled={isExploring}
+                onClick={() => onStartExploration?.(follower)}
+              >
+                {isExploring ? 'ส่งแล้ว' : 'ส่งสำรวจ'}
+              </button>
+            </article>
+          )
+        }) : (
+          <div className="empty-state">
+            <strong>ไม่มีผู้ติดตามในรายการนี้</strong>
+            <span>ลองเลือกตัวกรองอื่น</span>
+          </div>
+        )}
+      </div>
 
+      {totalPages > 1 && (
+        <div className="pagination">
           <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            style={{
-              border: '1px solid #111',
-              background: '#fff',
-              width: '28px',
-              height: '28px',
-              cursor: 'pointer',
-            }}
+            type="button"
+            disabled={safePage === 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            aria-label="หน้าก่อนหน้า"
           >
-            {'>'}
+            ‹
+          </button>
+          <span>{safePage} / {totalPages}</span>
+          <button
+            type="button"
+            disabled={safePage === totalPages}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            aria-label="หน้าถัดไป"
+          >
+            ›
           </button>
         </div>
       )}
-    </div>
+    </section>
   )
 }

@@ -1,51 +1,77 @@
-export default function ActivityCard({ activities = [] }) {
-  return (
-    <div
-      style={{
-        background: '#ffffff',
-        border: '2px solid #111',
-        borderRadius: '0',
-        padding: '12px',
-        marginTop: '12px',
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-          marginBottom: '10px',
-          borderBottom: '2px solid #111',
-          paddingBottom: '6px',
-          fontSize: '15px',
-        }}
-      >
-        กิจกรรมล่าสุด
-      </h3>
+import { useMemo, useState } from 'react'
 
-      <div style={{ marginTop: '8px' }}>
-        {activities.map((activity, index) => (
-          <div
-            key={activity.id}
-            style={{
-              paddingTop: index === 0 ? '0' : '8px',
-              paddingBottom: '8px',
-              borderBottom:
-                index === activities.length - 1
-                  ? 'none'
-                  : '1px solid #d9d9d9',
-              fontSize: '12px',
-            }}
-          >
-            <div style={{ fontWeight: 'bold' }}>
-              {activity.action ?? activity.title}
-            </div>
-            {(activity.value ?? activity.result) ? (
-              <div style={{ color: '#555', marginTop: '4px', fontSize: '12px' }}>
-                {activity.value ?? activity.result}
-              </div>
-            ) : null}
-          </div>
-        ))}
+const PAGE_SIZE = 10
+
+function formatDate(value) {
+  if (!value) return ''
+  return new Intl.DateTimeFormat('th-TH', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+export default function ActivityCard({ activities = [] }) {
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(activities.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pagedActivities = useMemo(() => {
+    const startIndex = (safePage - 1) * PAGE_SIZE
+    return activities.slice(startIndex, startIndex + PAGE_SIZE)
+  }, [activities, safePage])
+
+  return (
+    <section className="panel activity-panel">
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">ความเคลื่อนไหว</span>
+          <h2>กิจกรรมล่าสุด</h2>
+        </div>
+        <span className="soft-badge">{activities.length}</span>
       </div>
-    </div>
+
+      <div className="activity-list">
+        {pagedActivities.length ? pagedActivities.map((activity) => (
+          <article className="activity-row" key={activity.id}>
+            <span className={`activity-dot ${activity.type || ''}`} />
+            <div>
+              <h3>{activity.action ?? activity.title}</h3>
+              {(activity.value ?? activity.result) && (
+                <p>{activity.value ?? activity.result}</p>
+              )}
+            </div>
+            <time>{formatDate(activity.created_at)}</time>
+          </article>
+        )) : (
+          <div className="empty-state">
+            <strong>ยังไม่มีกิจกรรม</strong>
+            <span>รายการล่าสุดจะปรากฏที่นี่</span>
+          </div>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            type="button"
+            disabled={safePage === 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            aria-label="หน้าก่อนหน้า"
+          >
+            ‹
+          </button>
+          <span>{safePage} / {totalPages}</span>
+          <button
+            type="button"
+            disabled={safePage === totalPages}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            aria-label="หน้าถัดไป"
+          >
+            ›
+          </button>
+        </div>
+      )}
+    </section>
   )
 }

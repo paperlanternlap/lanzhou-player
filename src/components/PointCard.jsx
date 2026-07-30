@@ -1,87 +1,35 @@
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('th-TH')
+}
+
 export default function PointCard({ character, onOpenExchange, onOpenFavorExchange }) {
   return (
-    <div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '8px',
-          marginTop: '12px',
-        }}
-      >
-        <div
-          style={{
-            background: '#fff',
-            padding: '8px',
-            borderRadius: '0',
-            border: '2px solid #111',
-          }}
-        >
-          <div style={{ fontWeight: 'bold', marginBottom: '2px', fontSize: '11px' }}>
-            RP
-          </div>
-          <strong style={{ fontSize: '22px' }}>
-            {character?.rp ?? 0}
-          </strong>
+    <section className="panel score-panel" aria-label="คะแนนตัวละคร">
+      <div className="score-grid">
+        <div className="score-tile score-tile--rp">
+          <span>RP</span>
+          <strong>{formatNumber(character?.rp)}</strong>
+          <small>แต้มกิจกรรม</small>
         </div>
-
-        <div
-          style={{
-            background: '#fff',
-            padding: '8px',
-            borderRadius: '0',
-            border: '2px solid #111',
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 'bold',
-              marginBottom: '2px',
-              fontSize: '11px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+        <div className="score-tile score-tile--favor">
+          <div className="score-tile__heading">
             <span>โปรดปราน</span>
             <button
+              type="button"
+              aria-label="แลก RP เป็นโปรดปราน"
+              title="แลก RP เป็นโปรดปราน"
               onClick={() => onOpenFavorExchange?.()}
-              style={{
-                width: '18px',
-                height: '18px',
-                border: '1px solid #111',
-                background: '#fff',
-                cursor: 'pointer',
-                padding: 0,
-                lineHeight: '16px',
-                fontWeight: 'bold',
-              }}
             >
               +
             </button>
           </div>
-          <strong style={{ fontSize: '22px' }}>
-            {character?.favor ?? 0}
-          </strong>
+          <strong>{formatNumber(character?.favor)}</strong>
+          <small>คะแนนเลื่อนขั้น</small>
         </div>
       </div>
-
-      <button
-        onClick={() => onOpenExchange?.()}
-        style={{
-          marginTop: '6px',
-          width: '100%',
-          padding: '6px',
-          borderRadius: '0',
-          border: '2px solid #111',
-          background: '#fff',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '11px',
-        }}
-      >
-        เปิดร้านค้า
+      <button className="primary-button shop-button" type="button" onClick={() => onOpenExchange?.()}>
+        เปิดร้านแลกคะแนน
       </button>
-    </div>
+    </section>
   )
 }

@@ -1,8 +1,14 @@
 import { useState } from 'react'
 
-export default function ExchangeModal({ open, onClose, followers = [], onExchange }) {
-  if (!open) return null
+export default function ExchangeModal({
+  open,
+  onClose,
+  followers = [],
+  items = [],
+  onExchange,
+}) {
   const [tab, setTab] = useState('followers')
+  if (!open) return null
 
   return (
     <div
@@ -86,7 +92,13 @@ export default function ExchangeModal({ open, onClose, followers = [], onExchang
               <div key={follower.id} style={{ border: '1px solid #111', borderRadius: '0', padding: '12px' }}>
                 <strong>{follower.name}</strong>
                 <div>
-                  {follower.skill_type} ★{'★'.repeat(follower.skill_value || 1)}
+                  {follower.talents?.length
+                    ? follower.talents
+                      .map((talent) =>
+                        `${talent.label || talent.talent_key} ${talent.modifier_percent > 0 ? '+' : ''}${talent.modifier_percent}%`
+                      )
+                      .join(' · ')
+                    : 'ยังไม่ได้กำหนด Talent'}
                 </div>
                 <div>ราคา {follower.cost} RP</div>
                 <button
@@ -111,7 +123,7 @@ export default function ExchangeModal({ open, onClose, followers = [], onExchang
 
         {tab === 'items' && (
           <div style={{ display: 'grid', gap: '12px' }}>
-            {playerData.shop.items.map((item) => (
+            {items.map((item) => (
               <div key={item.id} style={{ border: '1px solid #111', borderRadius: '0', padding: '12px' }}>
                 <strong>{item.name}</strong>
                 <div>ราคา {item.cost} RP</div>

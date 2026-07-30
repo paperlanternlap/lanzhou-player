@@ -1,139 +1,68 @@
 import { useState } from 'react'
 
-export default function InventoryCard({ inventory = [] }) {
+const PAGE_SIZE = 8
+
+export default function InventoryCard({ inventory = [], onSelectItem }) {
   const [page, setPage] = useState(1)
-
-  const ITEMS_PER_PAGE = 4
-  const totalPages = Math.max(1, Math.ceil(inventory.length / ITEMS_PER_PAGE))
-
+  const totalPages = Math.max(1, Math.ceil(inventory.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
   const paginatedInventory = inventory.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
   )
+
   return (
-    <div
-      style={{
-        background: '#ffffff',
-        border: '2px solid #111',
-        borderRadius: '0',
-        padding: '12px',
-        marginTop: '12px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            fontSize: '15px',
-          }}
-        >
-          คลังของ
-        </h3>
+    <section className="panel inventory-panel">
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">ทรัพย์สิน</span>
+          <h2>คลังไอเท็ม <small>{inventory.length} รายการ</small></h2>
+        </div>
       </div>
 
-      <div
-        style={{
-          borderBottom: '2px solid #111',
-          marginTop: '8px',
-          marginBottom: '8px',
-        }}
-      />
-
-      <div style={{ marginTop: '8px' }}>
-        {paginatedInventory.map((item) => (
-          <div
-            key={item.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 0',
-              fontSize: '12px',
-              borderBottom: '1px solid #d9d9d9',
-            }}
+      <div className="inventory-list">
+        {paginatedInventory.length ? paginatedInventory.map((item) => (
+          <button
+            className="inventory-row"
+            type="button"
+            key={item.inventory_id ?? item.id}
+            onClick={() => onSelectItem?.(item)}
           >
             <span>{item.item_name ?? item.name}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontWeight: 'bold' }}>
-                x{item.quantity ?? item.amount}
-              </span>
-
-              <button
-                style={{
-                  border: '1px solid #111',
-                  background: '#fff',
-                  padding: '4px 10px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                }}
-              >
-                ใช้
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {totalPages > 1 && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '6px',
-              marginTop: '16px',
-            }}
-          >
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              style={{
-                border: '1px solid #111',
-                background: '#fff',
-                width: '28px',
-                height: '28px',
-                cursor: 'pointer',
-              }}
-            >
-              {'<'}
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                style={{
-                  border: '1px solid #111',
-                  width: '28px',
-                  height: '28px',
-                  cursor: 'pointer',
-                  background: page === pageNum ? '#111' : '#fff',
-                  color: page === pageNum ? '#fff' : '#111',
-                }}
-              >
-                {pageNum}
-              </button>
-            ))}
-
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              style={{
-                border: '1px solid #111',
-                background: '#fff',
-                width: '28px',
-                height: '28px',
-                cursor: 'pointer',
-              }}
-            >
-              {'>'}
-            </button>
+            <span className="inventory-quantity">
+              <strong>×{item.quantity ?? item.amount}</strong>
+              <i>ดูรายละเอียด ›</i>
+            </span>
+          </button>
+        )) : (
+          <div className="empty-state compact">
+            <strong>คลังยังว่างอยู่</strong>
+            <span>ไอเท็มที่ซื้อหรือได้รับจะแสดงที่นี่</span>
           </div>
         )}
       </div>
-    </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            type="button"
+            disabled={safePage === 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            aria-label="หน้าก่อนหน้า"
+          >
+            ‹
+          </button>
+          <span>{safePage} / {totalPages}</span>
+          <button
+            type="button"
+            disabled={safePage === totalPages}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            aria-label="หน้าถัดไป"
+          >
+            ›
+          </button>
+        </div>
+      )}
+    </section>
   )
 }

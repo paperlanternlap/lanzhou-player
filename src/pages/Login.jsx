@@ -6,94 +6,67 @@ import { useAuth } from '../hooks/useAuth'
 export default function Login() {
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
   const { login } = useAuth()
 
-  async function handleLogin() {
-    if (loading) return
-    if (!username.trim()) {
-      alert('กรุณากรอก Username')
-      return
-    }
+  async function handleLogin(event) {
+    event.preventDefault()
+    if (loading || !username.trim()) return
 
     setLoading(true)
-
-    const { data, error } = await supabase
+    setError('')
+    const { data, error: loginError } = await supabase
       .from('characters')
       .select('*')
       .eq('username', username.trim())
       .maybeSingle()
 
-    console.log('LOGIN USERNAME', username)
-    console.log('LOGIN RESULT', data)
-    console.log('LOGIN ERROR', error)
-
-    if (error || !data) {
-      alert('ไม่พบ Username นี้')
+    if (loginError || !data) {
+      setError('ไม่พบบัญชีตัวละครนี้ กรุณาตรวจสอบชื่อผู้ใช้อีกครั้ง')
       setLoading(false)
       return
     }
 
     login(data.id)
-
-    console.log('SAVED CHARACTER ID', localStorage.getItem('characterId'))
-
     navigate('/dashboard', { replace: true })
-
     setLoading(false)
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f5f1ea',
-      }}
-    >
-      <div
-        style={{
-          width: '360px',
-          background: '#fff',
-          padding: '24px',
-          borderRadius: '16px',
-          border: '1px solid #ddd',
-        }}
-      >
-        <h2>เข้าสู่ตำหนัก</h2>
-
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            marginTop: '12px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            boxSizing: 'border-box',
-          }}
-        />
-
-        <button
-          onClick={handleLogin}
-          disabled={loading || !username.trim()}
-          style={{
-            width: '100%',
-            marginTop: '16px',
-            padding: '12px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          เข้าสู่ตำหนัก
-        </button>
-      </div>
-    </div>
+    <main className="login-page">
+      <div className="login-ornament" aria-hidden="true">蘭</div>
+      <section className="login-card">
+        <div className="login-brand">
+          <span>蘭州宮錄</span>
+          <small>LANZHOU PALACE LEDGER</small>
+        </div>
+        <div className="login-heading">
+          <span className="eyebrow">PLAYER PORTAL</span>
+          <h1>เข้าสู่ตำหนัก</h1>
+          <p>กรอกชื่อผู้ใช้ของตัวละครเพื่อดูคะแนน คลัง และภารกิจ</p>
+        </div>
+        <form onSubmit={handleLogin}>
+          <label htmlFor="username">ชื่อผู้ใช้</label>
+          <input
+            id="username"
+            type="text"
+            autoComplete="username"
+            placeholder="กรอก Username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
+          {error && <p className="form-error">{error}</p>}
+          <button
+            className="primary-button login-button"
+            type="submit"
+            disabled={loading || !username.trim()}
+          >
+            {loading ? 'กำลังเข้าสู่ตำหนัก...' : 'เข้าสู่ตำหนัก'}
+          </button>
+        </form>
+        <small className="login-help">หากเข้าใช้งานไม่ได้ กรุณาติดต่อสต๊าฟคอมมู</small>
+      </section>
+    </main>
   )
 }
