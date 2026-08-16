@@ -1,0 +1,1 @@
+function e(e){return Number(e||0).toLocaleString(`th-TH`)}export{e as t};
