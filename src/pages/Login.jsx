@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabase'
 import { useAuth } from '../hooks/useAuth'
+import { findCharacterAccount } from '../services/authService'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -16,11 +16,7 @@ export default function Login() {
 
     setLoading(true)
     setError('')
-    const { data, error: loginError } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('username', username.trim())
-      .maybeSingle()
+    const { data, error: loginError } = await findCharacterAccount(username)
 
     if (loginError || !data) {
       setError('ไม่พบบัญชีตัวละครนี้ กรุณาตรวจสอบชื่อผู้ใช้อีกครั้ง')

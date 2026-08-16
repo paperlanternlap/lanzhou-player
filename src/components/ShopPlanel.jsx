@@ -1,26 +1,11 @@
 import { useMemo, useState } from 'react'
-
-const PAGE_SIZE = 4
-
-const followerTypeLabels = {
-  close_maid: 'นางกำนัลใกล้ชิด',
-  maid: 'นางกำนัล',
-  eunuch: 'ขันที',
-  kitchen: 'แม่ครัว',
-  gardener: 'คนสวน',
-  physician: 'ผู้ช่วยแพทย์',
-  guard: 'องครักษ์',
-  merchant: 'พ่อค้า',
-  tailor: 'ช่างเย็บปัก',
-  scribe: 'เสมียน',
-  courier: 'คนส่งของ',
-  ritual_attendant: 'ผู้ดูแลงานพิธี',
-  other: 'ผู้ติดตาม',
-}
-
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString('th-TH')
-}
+import { formatNumber } from '../utils/formatters'
+import {
+  followerTypeLabels,
+  formatShopDeliveryWindow,
+  SHOP_PAGE_SIZE,
+  shopSections,
+} from './shop/shopConfig'
 
 export default function ShopPanel({
   shopFollowers = [],
@@ -28,9 +13,16 @@ export default function ShopPanel({
   onBuyItem,
   onBuyFollower,
 }) {
-  const [activeTab, setActiveTab] = useState('items')
+  const [activeSection, setActiveSection] = useState('palace_stock')
   const [followerType, setFollowerType] = useState('all')
+  const [selectedNpcId, setSelectedNpcId] = useState('')
   const [page, setPage] = useState(1)
+
+  // ของจากการสำรวจ อีเวนต์ และภารกิจไม่ใช่สินค้าของโรงเบิก
+  const availableItems = useMemo(
+    () => shopItems.filter((item) => item.acquisition_type !== 'story_only'),
+    [shopItems],
+  )
 
   const followerTypes = useMemo(() => {
     const counts = shopFollowers.reduce((result, follower) => {
@@ -46,25 +38,64 @@ export default function ShopPanel({
     )
   }, [shopFollowers])
 
+  const npcGroups = useMemo(() => {
+    const groups = new Map()
+    availableItems
+      .filter((item) => item.acquisition_type === 'restricted' && item.unlocked)
+      .forEach((item) => {
+        const key = String(item.acquisition_channel_id || item.acquisition_channel_name)
+        if (!key || key === 'null' || key === 'undefined') return
+        if (!groups.has(key)) {
+          groups.set(key, {
+            id: key,
+            name: item.acquisition_channel_name,
+            role: item.acquisition_channel_role,
+            accessReason: item.acquisition_channel_access_reason,
+          })
+        }
+      })
+    return Array.from(groups.values())
+  }, [availableItems])
+
+  const hasUnknownNpc = availableItems.some(
+    (item) => item.acquisition_type === 'restricted' && !item.unlocked,
+  )
+  const activeNpcId = npcGroups.some((npc) => npc.id === selectedNpcId)
+    ? selectedNpcId
+    : npcGroups[0]?.id || ''
+
   const entries = useMemo(() => {
-    if (activeTab === 'items') return shopItems
+    if (activeSection !== 'followers') {
+      if (activeSection === 'restricted') {
+        return availableItems.filter((item) => {
+          const npcId = String(item.acquisition_channel_id || item.acquisition_channel_name)
+          return item.acquisition_type === 'restricted'
+            && item.unlocked
+            && npcId === activeNpcId
+        })
+      }
+      return availableItems.filter(
+        (item) => item.acquisition_type === activeSection,
+      )
+    }
     if (followerType === 'all') return shopFollowers
     return shopFollowers.filter(
       (follower) => (follower.follower_type || 'other') === followerType,
     )
-  }, [activeTab, followerType, shopFollowers, shopItems])
+  }, [activeNpcId, activeSection, availableItems, followerType, shopFollowers])
 
-  const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE))
+  const currentSection = shopSections.find((section) => section.id === activeSection)
+  const totalPages = Math.max(1, Math.ceil(entries.length / SHOP_PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const pageEntries = entries.slice(
-    (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE,
+    (safePage - 1) * SHOP_PAGE_SIZE,
+    safePage * SHOP_PAGE_SIZE,
   )
-  const rangeStart = entries.length ? (safePage - 1) * PAGE_SIZE + 1 : 0
-  const rangeEnd = Math.min(safePage * PAGE_SIZE, entries.length)
+  const rangeStart = entries.length ? (safePage - 1) * SHOP_PAGE_SIZE + 1 : 0
+  const rangeEnd = Math.min(safePage * SHOP_PAGE_SIZE, entries.length)
 
-  function chooseTab(tab) {
-    setActiveTab(tab)
+  function chooseSection(section) {
+    setActiveSection(section)
     setPage(1)
   }
 
@@ -73,33 +104,36 @@ export default function ShopPanel({
     setPage(1)
   }
 
+  function chooseNpc(npcId) {
+    setSelectedNpcId(npcId)
+    setPage(1)
+  }
+
   return (
     <div className="shop-panel">
       <div className="shop-intro">
-        <span className="eyebrow">ร้านหลวง</span>
-        <h2>แลกคะแนน</h2>
-        <p>เลือกไอเท็ม สิทธิ์พิเศษ หรือผู้ติดตามด้วยคะแนนของตัวละคร</p>
+        <span className="eyebrow">บัญชีสิ่งของประจำวัง</span>
+        <h2>เบิกของและจัดหา</h2>
+        <p>เลือกช่องทางที่ตัวละครเข้าถึงได้ ส่วนของจากการสำรวจ ภารกิจ และเหตุการณ์จะได้รับผ่านเนื้อเรื่อง</p>
       </div>
 
       <div className="shop-toolbar">
-        <div className="segmented-control shop-tabs" aria-label="หมวดร้านค้า">
-          <button
-            type="button"
-            className={activeTab === 'items' ? 'active' : ''}
-            onClick={() => chooseTab('items')}
-          >
-            ไอเท็มและสิทธิ์ <span>{shopItems.length}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === 'followers' ? 'active' : ''}
-            onClick={() => chooseTab('followers')}
-          >
-            ผู้ติดตาม <span>{shopFollowers.length}</span>
-          </button>
+        <div className="segmented-control shop-tabs" role="tablist" aria-label="เลือกช่องทางรับของหรือผู้ติดตาม">
+          {shopSections.map((section) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSection === section.id}
+              key={section.id}
+              className={activeSection === section.id ? 'active' : ''}
+              onClick={() => chooseSection(section.id)}
+            >
+              <span className="shop-tab-label">{section.label}</span>
+            </button>
+          ))}
         </div>
 
-        {activeTab === 'followers' && (
+        {activeSection === 'followers' && (
           <label className="shop-follower-filter">
             <span>สายผู้ติดตาม</span>
             <select
@@ -117,28 +151,93 @@ export default function ShopPanel({
         )}
       </div>
 
+      <section className={`shop-section-summary ${activeSection}`}>
+        <span className="shop-section-kicker">{currentSection.eyebrow}</span>
+        <div>
+          <h3>{currentSection.title}</h3>
+          <p>{currentSection.description}</p>
+        </div>
+      </section>
+
+      {activeSection === 'restricted' && (
+        <section className="shop-npc-directory" aria-label="NPC ที่ตัวละครรู้จัก">
+          <div className="shop-npc-directory__heading">
+            <span>ผู้ที่ติดต่อได้</span>
+            <p>เลือกผู้ติดต่อเพื่อดูสิ่งของและเงื่อนไขการเจรจา</p>
+          </div>
+          {npcGroups.length ? (
+            <div className="shop-npc-list" role="tablist" aria-label="รายชื่อ NPC">
+              {npcGroups.map((npc) => (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeNpcId === npc.id}
+                  className={activeNpcId === npc.id ? 'active' : ''}
+                  key={npc.id}
+                  onClick={() => chooseNpc(npc.id)}
+                >
+                  <strong>{npc.name}</strong>
+                  <span>{npc.role}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="shop-npc-locked">
+              <strong>ยังไม่มี NPC ที่รู้จัก</strong>
+              <span>ตามหาเบาะแสหรือสร้างความสัมพันธ์ผ่านการโรลและอีเวนต์ เมื่อพบกันแล้วทีมงานจะบันทึกสิทธิ์ให้</span>
+            </div>
+          )}
+          {hasUnknownNpc && npcGroups.length > 0 && (
+            <p className="shop-npc-hint">ยังมีผู้ติดต่อที่ตัวละครสามารถค้นพบได้จากเนื้อเรื่อง</p>
+          )}
+        </section>
+      )}
+
       <div className="shop-grid">
         {pageEntries.length ? pageEntries.map((entry) => {
-          const isItem = activeTab === 'items'
+          const isItem = activeSection !== 'followers'
           const isOut = isItem && entry.is_limited && entry.stock_quantity <= 0
-          const currency = isItem && entry.price_currency === 'favor'
-            ? 'โปรดปราน'
-            : 'RP'
+          const isUnavailable = isItem && !entry.can_request
+          const isSecretLocked = isItem
+            && entry.acquisition_type === 'restricted'
+            && !entry.unlocked
           const cost = entry.cost ?? entry.price ?? 0
-          const isEvent = isItem && entry.fulfillment_type === 'staff_request'
+          const isSpecialEvent = isItem && entry.fulfillment_type === 'staff_request'
+          const currencyLabel = entry.price_currency === 'favor' ? 'แต้มโปรดปราน' : 'แต้ม RP'
+          const actionText = isOut
+            ? 'ของหมด'
+            : isUnavailable
+              ? entry.action_label || 'ยังไม่ผ่านเงื่อนไข'
+              : isItem
+                ? isSpecialEvent
+                  ? 'แลกสิทธิ์เหตุการณ์'
+                  : activeSection === 'restricted' ? 'เจรจาซื้อ' : entry.action_label
+                : 'รับเข้าสังกัด'
 
           return (
-            <article className={`shop-card ${isOut ? 'out' : ''}`} key={entry.id}>
+            <article
+              className={`shop-card shop-card--${activeSection} ${isOut ? 'out' : ''} ${isSecretLocked ? 'locked' : ''}`}
+              key={entry.id}
+            >
               <div className="shop-card__top">
-                <span className={`shop-kind ${isEvent ? 'event' : ''}`}>
+                <span className={`shop-kind ${activeSection === 'restricted' ? 'event' : ''}`}>
                   {isItem
-                    ? isEvent ? 'สิทธิ์พิเศษ' : 'ไอเท็ม'
+                    ? isSpecialEvent
+                      ? 'เหตุการณ์พิเศษ'
+                      : activeSection === 'palace_stock'
+                      ? 'คลังหลวง'
+                      : activeSection === 'external_legal'
+                        ? 'จัดหานอกวัง'
+                        : entry.unlocked
+                          ? entry.acquisition_channel_name || 'รู้จัก NPC แล้ว'
+                          : 'ยังไม่รู้จัก NPC'
                     : followerTypeLabels[entry.follower_type] || 'ผู้ติดตาม'}
                 </span>
                 {isItem && entry.is_limited && (
-                  <small>{isOut ? 'หมดแล้ว' : `เหลือ ${entry.stock_quantity}`}</small>
+                  <small>{isOut ? 'หมดแล้ว' : `คงเหลือ ${entry.stock_quantity}`}</small>
                 )}
               </div>
+
               <h3>{entry.name}</h3>
               <p>{entry.description || 'ยังไม่มีรายละเอียด'}</p>
 
@@ -158,45 +257,81 @@ export default function ShopPanel({
                       </span>
                     ))
                   ) : (
-                    <small>ยังไม่ได้กำหนด Talent</small>
+                    <small>ยังไม่ได้กำหนดความถนัด</small>
                   )}
                 </div>
               )}
 
-              {isItem && (
+              {isItem && isSpecialEvent && (
+                <small className="fulfillment-note">เมื่อแลกสำเร็จ ทีมงานจะได้รับรายการเพื่อดำเนินเหตุการณ์ต่อ</small>
+              )}
+
+              {isItem && !isSpecialEvent && activeSection === 'palace_stock' && (
+                <small className="fulfillment-note">เบิกจากคลังส่วนกลางและบันทึกเข้าบัญชีตำหนัก</small>
+              )}
+
+              {isItem && !isSpecialEvent && activeSection === 'external_legal' && (
                 <small className="fulfillment-note">
-                  {isEvent ? 'แลกแล้วส่งคำร้องให้สต๊าฟ' : 'แลกแล้วเพิ่มเข้าคลัง'}
+                  {formatShopDeliveryWindow(entry.fulfillment_days_min, entry.fulfillment_days_max)}
                 </small>
               )}
+
+              {isItem && activeSection === 'restricted' && !entry.unlocked && (
+                <div className="secret-lock-note">
+                  <strong>ยังไม่รู้จัก NPC</strong>
+                  <span>ตามหาเบาะแสหรือสร้างความไว้วางใจกับ NPC ผ่านการโรลและอีเวนต์</span>
+                </div>
+              )}
+
+              {isItem && activeSection === 'restricted' && entry.unlocked && (
+                <div className="secret-channel-detail">
+                  <div>
+                    <span>NPC ผู้จัดหา</span>
+                    <strong>{entry.acquisition_channel_name}</strong>
+                  </div>
+                  <p>{entry.acquisition_channel_role}</p>
+                  {entry.acquisition_channel_access_reason && (
+                    <p>{entry.acquisition_channel_access_reason}</p>
+                  )}
+                  <span className="secret-risk">
+                    ความเสี่ยง {entry.acquisition_risk_level || 1}/5
+                  </span>
+                </div>
+              )}
+
               <div className="shop-card__footer">
-                <strong>{formatNumber(cost)} <em>{currency}</em></strong>
+                <strong>
+                  {isSecretLocked
+                    ? 'ยังไม่เปิดเผย'
+                    : <>{formatNumber(cost)} <em>{currencyLabel}</em></>}
+                </strong>
                 <button
                   className="primary-button compact-button"
                   type="button"
-                  disabled={isOut}
+                  disabled={isOut || isUnavailable}
                   onClick={() => {
                     if (isItem) onBuyItem?.(entry)
                     else onBuyFollower?.(entry)
                   }}
                 >
-                  {isOut ? 'สินค้าหมด' : 'แลกรางวัล'}
+                  {actionText}
                 </button>
               </div>
             </article>
           )
         }) : (
           <div className="empty-state shop-empty">
-            <strong>ไม่มีรายการในสายนี้</strong>
-            <span>ลองเลือกสายผู้ติดตามอื่น</span>
+            <span className="shop-empty-kicker">{currentSection.eyebrow}</span>
+            <strong>{currentSection.emptyTitle}</strong>
+            <p>{currentSection.emptyDescription}</p>
           </div>
         )}
       </div>
 
-      <footer className="shop-pagination">
-        <span>
-          แสดง {rangeStart}–{rangeEnd} จาก {entries.length} รายการ
-        </span>
-        {totalPages > 1 && (
+      {entries.length > 0 && (
+        <footer className="shop-pagination">
+          <span>รายการที่ {formatNumber(rangeStart)}–{formatNumber(rangeEnd)} จาก {formatNumber(entries.length)}</span>
+          {totalPages > 1 && (
           <div>
             <button
               type="button"
@@ -211,15 +346,14 @@ export default function ShopPanel({
               type="button"
               disabled={safePage === totalPages}
               aria-label="หน้าถัดไป"
-              onClick={() =>
-                setPage((current) => Math.min(totalPages, current + 1))
-              }
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             >
               ›
             </button>
           </div>
-        )}
-      </footer>
+          )}
+        </footer>
+      )}
     </div>
   )
 }

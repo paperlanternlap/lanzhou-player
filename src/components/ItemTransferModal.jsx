@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabase'
+import {
+  searchTransferRecipients,
+  transferCharacterItem,
+} from '../services/itemTransferService'
 
 export default function ItemTransferModal({
   item,
@@ -23,14 +26,9 @@ export default function ItemTransferModal({
 
     const timer = window.setTimeout(async () => {
       setSearching(true)
-      const { data, error: searchError } = await supabase.rpc(
-        'search_item_transfer_recipients',
-        {
-          p_sender_character_id: currentCharacterId,
-          p_query: cleanQuery,
-          p_limit: 8,
-          p_offset: 0,
-        },
+      const { data, error: searchError } = await searchTransferRecipients(
+        currentCharacterId,
+        cleanQuery,
       )
       setSearching(false)
       if (searchError) {
@@ -50,15 +48,12 @@ export default function ItemTransferModal({
 
     setSubmitting(true)
     setError('')
-    const { error: transferError } = await supabase.rpc(
-      'transfer_character_item',
-      {
-        p_sender_character_id: currentCharacterId,
-        p_recipient_character_id: selected.id,
-        p_item_id: item.item_id,
-        p_quantity: quantity,
-      },
-    )
+    const { error: transferError } = await transferCharacterItem({
+      senderId: currentCharacterId,
+      recipientId: selected.id,
+      itemId: item.item_id,
+      quantity,
+    })
     setSubmitting(false)
 
     if (transferError) {

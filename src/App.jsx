@@ -1,25 +1,46 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ActivityCard from './components/ActivityCard'
+import AcquisitionStatusCard from './components/AcquisitionStatusCard'
 import FollowerCard from './components/FollowerCard'
-import FollowerMissionModal from './components/FollowerMissionModal'
 import InventoryCard from './components/InventoryCard'
-import ItemDetailModal from './components/ItemDetailModal'
-import ItemTransferModal from './components/ItemTransferModal'
 import PointCard from './components/PointCard'
 import ProfileCard from './components/ProfileCard'
 import PromotionCard from './components/PromotionCard'
 import RoleSubmissionCard from './components/RoleSubmissionCard'
-import ShopPanel from './components/ShopPlanel'
 import { useAuth } from './hooks/useAuth'
 import DashboardLayout from './layouts/DashboardLayout'
 import Login from './pages/Login'
-import { supabase } from './supabase'
+import {
+  acknowledgeAcquisition,
+  attemptNpcPurchase,
+  createItemUseRequest,
+  exchangeFavor,
+  getAcquisitionRequests,
+  getCharacterChoices,
+  getExplorationLocations,
+  getItemCatalog,
+  getPlayerActivities,
+  getPlayerCharacter,
+  getPlayerFollowers,
+  getPlayerInventory,
+  getPlayerRoleSubmissions,
+  getShopFollowers,
+  promotePlayerCharacter,
+  purchaseCatalogItem,
+  purchaseFollower,
+  startExploration,
+  submitAcquisitionRequest,
+  submitRole,
+} from './services/playerService'
 import { canFollowerAccessLocation } from './utils/followerExploration'
 
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString('th-TH')
-}
+const FavorExchangeModal = lazy(() => import('./components/FavorExchangeModal'))
+const FollowerMissionModal = lazy(() => import('./components/FollowerMissionModal'))
+const ItemDetailModal = lazy(() => import('./components/ItemDetailModal'))
+const ItemTransferModal = lazy(() => import('./components/ItemTransferModal'))
+const NpcPurchaseRollModal = lazy(() => import('./components/NpcPurchaseRollModal'))
+const ShopDialog = lazy(() => import('./components/ShopDialog'))
 
 function App() {
   const { characterId, logout } = useAuth()
@@ -35,160 +56,86 @@ function App() {
   const [explorationLocations, setExplorationLocations] = useState([])
   const [shopFollowers, setShopFollowers] = useState([])
   const [shopItems, setShopItems] = useState([])
+  const [acquisitionRequests, setAcquisitionRequests] = useState([])
   const [characterChoices, setCharacterChoices] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [transferItem, setTransferItem] = useState(null)
   const [missionFollower, setMissionFollower] = useState(null)
+  const [npcPurchaseItem, setNpcPurchaseItem] = useState(null)
 
   const loadCharacter = useCallback(async () => {
     if (!characterId) return
-    const { data, error } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('id', characterId)
-      .single()
+    const { data, error } = await getPlayerCharacter(characterId)
     if (error) {
       console.error(error)
       return
     }
-
-    const { data: promotionData } = await supabase
-      .from('rank_requirements')
-      .select('*')
-      .eq('current_position', data.position)
-      .maybeSingle()
-
-    setCharacter({
-      ...data,
-      next_position: promotionData?.next_position ?? null,
-      favor_required: promotionData?.favor_required ?? null,
-      max_slots: promotionData?.max_slots ?? null,
-    })
+    setCharacter(data)
   }, [characterId])
 
   const loadInventory = useCallback(async () => {
     if (!characterId) return
-    const detailsResult = await supabase.rpc('get_character_inventory_details', {
-      p_character_id: characterId,
-    })
-    if (!detailsResult.error) {
-      setInventory(detailsResult.data || [])
-      return
-    }
-
-    const fallbackResult = await supabase
-      .from('character_inventory')
-      .select('*')
-      .eq('character_id', characterId)
-    if (fallbackResult.error) console.error(fallbackResult.error)
-    else setInventory(fallbackResult.data || [])
+    const result = await getPlayerInventory(characterId)
+    if (result.error) console.error(result.error)
+    else setInventory(result.data || [])
   }, [characterId])
 
   const loadActivities = useCallback(async () => {
     if (!characterId) return
-    const { data, error } = await supabase
-      .from('character_history')
-      .select('*')
-      .eq('character_id', characterId)
-      .order('created_at', { ascending: false })
+    const { data, error } = await getPlayerActivities(characterId)
     if (error) console.error(error)
     else setActivities(data || [])
   }, [characterId])
 
   const loadRoleSubmissions = useCallback(async () => {
     if (!characterId) return
-    const { data, error } = await supabase.rpc('get_player_rp_submissions', {
-      p_character_id: characterId,
-    })
+    const { data, error } = await getPlayerRoleSubmissions(characterId)
     if (error) console.error(error)
     else setRoleSubmissions(data || [])
   }, [characterId])
 
   const loadFollowers = useCallback(async () => {
     if (!characterId) return
-    let [followerResult, missionResult] = await Promise.all([
-      supabase
-        .from('follower_master')
-        .select('*, talents:follower_talents(*)')
-        .eq('owner_character_id', characterId),
-      supabase.rpc('get_player_follower_explorations', {
-        p_character_id: characterId,
-      }),
-    ])
-    if (
-      followerResult.error &&
-      (followerResult.error.message?.includes('follower_talents') ||
-        followerResult.error.code === 'PGRST200')
-    ) {
-      followerResult = await supabase
-        .from('follower_master')
-        .select('*')
-        .eq('owner_character_id', characterId)
-    }
-    if (followerResult.error) {
-      console.error(followerResult.error)
+    const result = await getPlayerFollowers(characterId)
+    if (result.error) {
+      console.error(result.error)
       return
     }
-
-    const activeMissionMap = new Map(
-      (missionResult.error ? [] : missionResult.data || [])
-        .filter((mission) => mission.status === 'exploring')
-        .map((mission) => [String(mission.follower_id), mission]),
-    )
-    setFollowers(
-      (followerResult.data || []).map((follower) => ({
-        ...follower,
-        activeMission: activeMissionMap.get(String(follower.id)) || null,
-      })),
-    )
+    setFollowers(result.data || [])
   }, [characterId])
 
   const loadExplorationLocations = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('exploration_locations')
-      .select('*')
-      .eq('active', true)
-      .order('sort_order', { ascending: true })
+    const { data, error } = await getExplorationLocations()
     if (error) console.error(error)
     else setExplorationLocations(data || [])
   }, [])
 
   const loadShopFollowers = useCallback(async () => {
-    let result = await supabase
-      .from('follower_master')
-      .select('*, talents:follower_talents(*)')
-      .is('owner_character_id', null)
-      .eq('active', true)
-    if (
-      result.error &&
-      (result.error.message?.includes('follower_talents') ||
-        result.error.code === 'PGRST200')
-    ) {
-      result = await supabase
-        .from('follower_master')
-        .select('*')
-        .is('owner_character_id', null)
-        .eq('active', true)
-    }
+    const result = await getShopFollowers()
     if (result.error) console.error(result.error)
     else setShopFollowers(result.data || [])
   }, [])
 
   const loadShopItems = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .eq('active', true)
-      .eq('shop_available', true)
+    if (!characterId) return
+    const { data, error } = await getItemCatalog(characterId)
     if (error) console.error(error)
     else setShopItems(data || [])
-  }, [])
+  }, [characterId])
+
+  const loadAcquisitionRequests = useCallback(async () => {
+    if (!characterId) return
+    const { deliveryResult, requestsResult } = await getAcquisitionRequests(characterId)
+    const { data, error } = requestsResult
+    if (error) console.error(error)
+    else setAcquisitionRequests(data || [])
+    if (!deliveryResult.error && Number(deliveryResult.data || 0) > 0) {
+      await Promise.all([loadCharacter(), loadInventory(), loadActivities()])
+    }
+  }, [characterId, loadActivities, loadCharacter, loadInventory])
 
   const loadCharacterChoices = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('characters')
-      .select('id, character_name')
-      .order('character_name', { ascending: true })
+    const { data, error } = await getCharacterChoices()
     if (error) console.error(error)
     else setCharacterChoices(data || [])
   }, [])
@@ -205,6 +152,7 @@ function App() {
         loadExplorationLocations(),
         loadShopFollowers(),
         loadShopItems(),
+        loadAcquisitionRequests(),
         loadCharacterChoices(),
       ])
     }, 0)
@@ -220,13 +168,11 @@ function App() {
     loadCharacterChoices,
     loadShopFollowers,
     loadShopItems,
+    loadAcquisitionRequests,
   ])
 
   async function handleExchange(follower) {
-    const { error } = await supabase.rpc('purchase_follower', {
-      p_character_id: characterId,
-      p_follower_id: follower.id,
-    })
+    const { error } = await purchaseFollower(characterId, follower.id)
     if (error) {
       alert(
         error.message?.includes('already has an owner')
@@ -247,16 +193,39 @@ function App() {
     ])
   }
 
+  async function handleFavorExchange() {
+    if (favorAmount <= 0) return
+    if (favorAmount > character.rp) {
+      alert('RP ไม่เพียงพอ')
+      return
+    }
+
+    const { error } = await exchangeFavor({
+      characterId,
+      currentRp: character.rp,
+      currentFavor: character.favor,
+      rpAmount: favorAmount,
+    })
+    if (error) {
+      alert('แลกโปรดปรานไม่สำเร็จ')
+      return
+    }
+
+    setShowFavorExchange(false)
+    setFavorAmount(100)
+    await Promise.all([loadCharacter(), loadActivities()])
+  }
+
   function handleStartExploration(follower) {
     setMissionFollower(follower)
   }
 
   async function handleConfirmExploration({ followerId, locationId, objective }) {
-    const result = await supabase.rpc('start_follower_exploration', {
-      p_character_id: characterId,
-      p_follower_id: followerId,
-      p_location_id: locationId,
-      p_objective: objective || null,
+    const result = await startExploration({
+      characterId,
+      followerId,
+      locationId,
+      objective,
     })
     if (!result.error) {
       setMissionFollower(null)
@@ -300,11 +269,11 @@ function App() {
             ? { location, successChance }
             : best
         }, null)?.location
-        return supabase.rpc('start_follower_exploration', {
-          p_character_id: characterId,
-          p_follower_id: follower.id,
-          p_location_id: bestLocation.id,
-          p_objective: 'สำรวจและรวบรวมข้อมูลทั่วไป',
+        return startExploration({
+          characterId,
+          followerId: follower.id,
+          locationId: bestLocation.id,
+          objective: 'สำรวจและรวบรวมข้อมูลทั่วไป',
         })
       }),
     )
@@ -321,48 +290,50 @@ function App() {
     await Promise.all([loadFollowers(), loadActivities()])
   }
 
-  async function handleFavorExchange() {
-    if (favorAmount <= 0) return
-    if (favorAmount > character.rp) {
-      alert('RP ไม่เพียงพอ')
-      return
-    }
-
-    const receivedFavor = Math.floor(favorAmount / 10)
-    const { error } = await supabase
-      .from('characters')
-      .update({
-        rp: character.rp - favorAmount,
-        favor: character.favor + receivedFavor,
-      })
-      .eq('id', characterId)
-    if (error) {
-      alert('แลกโปรดปรานไม่สำเร็จ')
-      return
-    }
-
-    await supabase.from('character_history').insert({
-      character_id: characterId,
-      action: 'แลกโปรดปราน',
-      value: `-${favorAmount} RP · +${receivedFavor} โปรดปราน`,
-      type: 'favor',
-    })
-    setShowFavorExchange(false)
-    setFavorAmount(100)
-    await Promise.all([loadCharacter(), loadActivities()])
-  }
-
   async function handleBuyItem(item) {
-    const { error } = await supabase.rpc('purchase_catalog_item', {
-      p_character_id: characterId,
-      p_item_id: item.id,
-    })
+    if (item.fulfillment_type === 'staff_request') {
+      const currencyLabel = item.price_currency === 'favor' ? 'โปรดปราน' : 'RP'
+      const confirmed = window.confirm(
+        `ยืนยันแลก “${item.name}” ด้วย ${Number(item.cost || 0).toLocaleString('th-TH')} ${currencyLabel}\nเมื่อยืนยันแล้ว ระบบจะหักแต้มและส่งรายการให้ทีมงานทันที`,
+      )
+      if (!confirmed) return
+
+      const { error } = await purchaseCatalogItem(characterId, item.id)
+      if (error) {
+        alert(
+          error.message?.includes('Insufficient Favor')
+            ? 'โปรดปรานไม่เพียงพอ'
+            : error.message?.includes('Insufficient RP')
+              ? 'RP ไม่เพียงพอ'
+              : error.message?.includes('out of stock')
+                ? 'รายการนี้หมดแล้ว'
+                : 'แลกสิทธิ์เหตุการณ์ไม่สำเร็จ',
+        )
+        return
+      }
+
+      alert(`แลก ${item.name} สำเร็จ ทีมงานได้รับรายการเพื่อดำเนินเหตุการณ์แล้ว`)
+      await Promise.all([
+        loadCharacter(),
+        loadActivities(),
+        loadShopItems(),
+      ])
+      return
+    }
+
+    if (item.acquisition_type === 'restricted') {
+      setNpcPurchaseItem(item)
+      return
+    }
+    const { data, error } = await submitAcquisitionRequest(characterId, item.id)
     if (error) {
       alert(
         error.message?.includes('Insufficient RP')
           ? 'RP ไม่เพียงพอ'
-          : error.message?.includes('Insufficient Favor')
-            ? 'โปรดปรานไม่เพียงพอ'
+          : error.message?.includes('Favor threshold')
+            ? 'โปรดปรานยังไม่ถึงเกณฑ์'
+            : error.message?.includes('locked')
+              ? 'ตัวละครยังไม่รู้จัก NPC คนนี้'
             : error.message?.includes('out of stock')
               ? 'รายการนี้หมดแล้ว'
               : 'แลกรางวัลไม่สำเร็จ',
@@ -370,32 +341,66 @@ function App() {
       return
     }
 
-    alert(
-      item.fulfillment_type === 'staff_request'
-        ? `แลก ${item.name} สำเร็จ ระบบส่งคำร้องให้สต๊าฟแล้ว`
-        : `แลก ${item.name} สำเร็จ ไอเท็มถูกเพิ่มเข้าคลังแล้ว`,
-    )
+    alert(data?.status === 'completed'
+      ? `เบิก ${item.name} สำเร็จ ไอเท็มถูกเพิ่มเข้าคลังแล้ว`
+      : data?.auto_delivery && data?.available_at
+        ? `รับเรื่องจัดหา ${item.name} แล้ว คาดว่าจะเข้าคลังวันที่ ${new Date(data.available_at).toLocaleString('th-TH')}`
+        : item.acquisition_type === 'restricted'
+          ? `ส่งคำขอเจรจาซื้อ ${item.name} แล้ว รอทีมงานดำเนินการและทอยผลตามความเสี่ยง`
+          : `ส่งคำร้องสำหรับ ${item.name} แล้ว สามารถรอผลจากทีมงานได้`)
     await Promise.all([
       loadCharacter(),
       loadInventory(),
       loadActivities(),
       loadShopItems(),
+      loadAcquisitionRequests(),
     ])
   }
 
+  async function handleNpcPurchaseAttempt(item) {
+    const { data, error } = await attemptNpcPurchase(characterId, item.id)
+    if (error) {
+      console.error('NPC purchase attempt failed', error)
+      return {
+        data: null,
+        error: error.message?.includes('roll_phase')
+          || error.message?.includes('item_acquisition_requests_roll_phase_check')
+          ? 'ระบบทอยยังติดตั้งไม่ครบ กรุณาแจ้งทีมงานให้รัน migration ล่าสุด'
+          : error.message?.includes('Catalog item is not available')
+            ? 'ไอเท็มนี้ยังไม่ได้เปิดให้ซื้อจากหน้าทีมงาน'
+          : error.message?.includes('Insufficient RP')
+          ? 'RP ไม่เพียงพอ'
+          : error.message?.includes('already active')
+            ? 'มีคำขอซื้อรายการนี้กำลังดำเนินการอยู่'
+            : error.message?.includes('locked')
+              ? 'ตัวละครยังไม่รู้จัก NPC คนนี้'
+              : error.message?.includes('out of stock')
+                ? 'รายการนี้หมดแล้ว'
+                : 'เจรจาซื้อไม่สำเร็จ กรุณาลองใหม่',
+      }
+    }
+    await Promise.all([
+      loadCharacter(),
+      loadInventory(),
+      loadActivities(),
+      loadShopItems(),
+      loadAcquisitionRequests(),
+    ])
+    return { data, error: null }
+  }
+
+  async function handleAcknowledgeAcquisition(requestId) {
+    const { error } = await acknowledgeAcquisition(characterId, requestId)
+    if (error) {
+      console.error('Acknowledge acquisition result failed', error)
+      alert('ปิดผลคำร้องไม่สำเร็จ กรุณาลองใหม่')
+      return
+    }
+    setAcquisitionRequests((current) => current.filter((request) => request.id !== requestId))
+  }
+
   async function handleRequestItem(values) {
-    const result = await supabase.rpc('create_player_item_use_request', {
-      p_requester_character_id: characterId,
-      p_item_id: values.itemId,
-      p_request_type: values.requestType,
-      p_target_character_id: values.targetCharacterId,
-      p_actor_name: values.actorName || null,
-      p_use_channel: values.useChannel || null,
-      p_desired_effect: values.desiredEffect,
-      p_details: values.details || null,
-      p_role_url: values.roleUrl || null,
-      p_secrecy_level: values.secrecyLevel,
-    })
+    const result = await createItemUseRequest(characterId, values)
 
     if (!result.error) {
       setSelectedItem(null)
@@ -411,13 +416,7 @@ function App() {
     }
 
     setSubmittingRole(true)
-    const { error } = await supabase.rpc('submit_player_rp', {
-      p_character_id: characterId,
-      p_role_url: values.roleUrl,
-      p_submission_type: values.submissionType,
-      p_participant_names: values.participantNames || null,
-      p_player_note: values.playerNote || null,
-    })
+    const { error } = await submitRole(characterId, values)
     setSubmittingRole(false)
 
     if (error) {
@@ -449,39 +448,15 @@ function App() {
       return
     }
 
-    if (character.max_slots) {
-      const { count, error } = await supabase
-        .from('characters')
-        .select('*', { count: 'exact', head: true })
-        .eq('position', character.next_position)
-      if (error) {
-        alert('ตรวจสอบตำแหน่งไม่สำเร็จ')
-        return
-      }
-      if (count >= character.max_slots) {
-        alert('ตำแหน่งนี้เต็มแล้ว')
-        return
-      }
-    }
-
-    const { error } = await supabase
-      .from('characters')
-      .update({
-        position: character.next_position,
-        favor: character.favor - character.favor_required,
-      })
-      .eq('id', characterId)
+    const { error } = await promotePlayerCharacter(characterId)
     if (error) {
-      alert('เลื่อนขั้นไม่สำเร็จ')
+      alert(
+        error.message?.includes('slots are full')
+          ? 'ตำแหน่งนี้เต็มแล้ว'
+          : 'เลื่อนขั้นไม่สำเร็จ',
+      )
       return
     }
-
-    await supabase.from('character_history').insert({
-      character_id: characterId,
-      action: 'เลื่อนขั้น',
-      value: `${character.position} → ${character.next_position}`,
-      type: 'promotion',
-    })
     alert(`เลื่อนขั้นเป็น ${character.next_position} สำเร็จ`)
     await Promise.all([loadCharacter(), loadActivities()])
   }
@@ -537,91 +512,34 @@ function App() {
               loading={submittingRole}
               onSubmit={handleSubmitRole}
             />
+            <AcquisitionStatusCard
+              requests={acquisitionRequests}
+              onAcknowledge={handleAcknowledgeAcquisition}
+            />
             <ActivityCard activities={activities} />
           </>
         }
       />
 
+      <Suspense fallback={null}>
       {showFavorExchange && (
-        <div className="modal-backdrop" onMouseDown={() => setShowFavorExchange(false)}>
-          <section
-            className="dialog favor-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="favor-dialog-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              className="dialog-close"
-              type="button"
-              aria-label="ปิด"
-              onClick={() => setShowFavorExchange(false)}
-            >
-              ×
-            </button>
-            <span className="eyebrow">แลกคะแนน</span>
-            <h2 id="favor-dialog-title">เปลี่ยน RP เป็นโปรดปราน</h2>
-            <p className="dialog-intro">ทุก 10 RP แลกได้ 1 คะแนนโปรดปราน</p>
-
-            <div className="exchange-balance">
-              <div><span>RP คงเหลือ</span><strong>{formatNumber(character.rp)}</strong></div>
-              <div><span>โปรดปรานปัจจุบัน</span><strong>{formatNumber(character.favor)}</strong></div>
-            </div>
-
-            <label className="exchange-label" htmlFor="favor-amount">จำนวน RP ที่ต้องการใช้</label>
-            <div className="number-stepper">
-              <button type="button" onClick={() => setFavorAmount((value) => Math.max(0, value - 10))}>−</button>
-              <input
-                id="favor-amount"
-                type="number"
-                min="0"
-                step="10"
-                value={favorAmount}
-                onChange={(event) => setFavorAmount(Math.max(0, Number(event.target.value) || 0))}
-              />
-              <button type="button" onClick={() => setFavorAmount((value) => value + 10)}>+</button>
-            </div>
-            <div className="exchange-result">
-              <span>คุณจะได้รับ</span>
-              <strong>+{formatNumber(Math.floor(favorAmount / 10))} โปรดปราน</strong>
-            </div>
-            <button
-              className="primary-button dialog-submit"
-              type="button"
-              disabled={!favorAmount || favorAmount > character.rp}
-              onClick={handleFavorExchange}
-            >
-              ยืนยันการแลก
-            </button>
-          </section>
-        </div>
+        <FavorExchangeModal
+          character={character}
+          amount={favorAmount}
+          onAmountChange={setFavorAmount}
+          onClose={() => setShowFavorExchange(false)}
+          onConfirm={handleFavorExchange}
+        />
       )}
 
       {showShop && (
-        <div className="modal-backdrop" onMouseDown={() => setShowShop(false)}>
-          <section
-            className="dialog shop-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-label="ร้านแลกคะแนน"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              className="dialog-close"
-              type="button"
-              aria-label="ปิดร้านค้า"
-              onClick={() => setShowShop(false)}
-            >
-              ×
-            </button>
-            <ShopPanel
-              shopFollowers={shopFollowers}
-              shopItems={shopItems}
-              onBuyItem={handleBuyItem}
-              onBuyFollower={handleExchange}
-            />
-          </section>
-        </div>
+        <ShopDialog
+          shopFollowers={shopFollowers}
+          shopItems={shopItems}
+          onBuyItem={handleBuyItem}
+          onBuyFollower={handleExchange}
+          onClose={() => setShowShop(false)}
+        />
       )}
 
       {selectedItem && (
@@ -635,6 +553,15 @@ function App() {
             setTransferItem(selectedItem)
             setSelectedItem(null)
           }}
+        />
+      )}
+
+      {npcPurchaseItem && (
+        <NpcPurchaseRollModal
+          item={npcPurchaseItem}
+          rp={character?.rp}
+          onClose={() => setNpcPurchaseItem(null)}
+          onAttempt={handleNpcPurchaseAttempt}
         />
       )}
 
@@ -659,6 +586,7 @@ function App() {
           onSubmit={handleConfirmExploration}
         />
       )}
+      </Suspense>
     </div>
   )
 

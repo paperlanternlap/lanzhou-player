@@ -9,7 +9,6 @@ export default function PointCard({ character, onOpenExchange, onOpenFavorExchan
         <div className="score-tile score-tile--rp">
           <span>RP</span>
           <strong>{formatNumber(character?.rp)}</strong>
-          <small>แต้มกิจกรรม</small>
         </div>
         <div className="score-tile score-tile--favor">
           <div className="score-tile__heading">
@@ -22,11 +21,10 @@ export default function PointCard({ character, onOpenExchange, onOpenFavorExchan
             />
           </div>
           <strong>{formatNumber(character?.favor)}</strong>
-          <small>คะแนนเลื่อนขั้น</small>
         </div>
       </div>
       <button className="primary-button shop-button" type="button" onClick={() => onOpenExchange?.()}>
-        เปิดร้านแลกคะแนน
+        เบิกของและว่าจ้าง
       </button>
     </section>
   )

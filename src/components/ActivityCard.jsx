@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-const PAGE_SIZE = 7
+const PAGE_SIZE = 5
 
 function formatDate(value) {
   if (!value) return ''
