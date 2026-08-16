@@ -1,6 +1,14 @@
 import { supabase } from '../supabase'
 
 const TALENT_RELATION_ERRORS = ['follower_talents']
+const FOLLOWER_FIELDS = `
+  id, name, description, image_url, status, price, active, follower_type,
+  owner_character_id,
+  talents:follower_talents(id, talent_key, label, modifier_percent)
+`
+const FOLLOWER_FIELDS_WITHOUT_TALENTS =
+  'id, name, description, image_url, status, price, active, follower_type, owner_character_id'
+const rankRequirementCache = new Map()
 
 function isMissingTalentRelation(error) {
   return error?.code === 'PGRST200' || TALENT_RELATION_ERRORS.some((text) => error?.message?.includes(text))
@@ -9,13 +17,13 @@ function isMissingTalentRelation(error) {
 async function getFollowersByOwner(characterId) {
   let result = await supabase
     .from('follower_master')
-    .select('*, talents:follower_talents(*)')
+    .select(FOLLOWER_FIELDS)
     .eq('owner_character_id', characterId)
 
   if (result.error && isMissingTalentRelation(result.error)) {
     result = await supabase
       .from('follower_master')
-      .select('*')
+      .select(FOLLOWER_FIELDS_WITHOUT_TALENTS)
       .eq('owner_character_id', characterId)
   }
   return result
@@ -24,43 +32,42 @@ async function getFollowersByOwner(characterId) {
 async function getAvailableFollowers() {
   let result = await supabase
     .from('follower_master')
-    .select('*, talents:follower_talents(*)')
+    .select(FOLLOWER_FIELDS)
     .is('owner_character_id', null)
     .eq('active', true)
 
   if (result.error && isMissingTalentRelation(result.error)) {
     result = await supabase
       .from('follower_master')
-      .select('*')
+      .select(FOLLOWER_FIELDS_WITHOUT_TALENTS)
       .is('owner_character_id', null)
       .eq('active', true)
   }
   return result
 }
 
-export async function getPlayerCharacter(characterId) {
-  const characterResult = await supabase
+export function getPlayerCharacter(characterId) {
+  return supabase
     .from('characters')
-    .select('*')
+    .select(`
+      id, character_name, avatar_url, palace, position, rp, favor,
+      promotion_locked, promotion_lock_reason
+    `)
     .eq('id', characterId)
     .single()
-  if (characterResult.error) return characterResult
+}
 
-  const promotionResult = await supabase
-    .from('rank_requirements')
-    .select('*')
-    .eq('current_position', characterResult.data.position)
-    .maybeSingle()
-
-  return {
-    data: {
-      ...characterResult.data,
-      next_position: promotionResult.data?.next_position ?? null,
-      favor_required: promotionResult.data?.favor_required ?? null,
-      max_slots: promotionResult.data?.max_slots ?? null,
-    },
-    error: null,
+export async function getRankRequirement(position) {
+  if (rankRequirementCache.has(position)) {
+    return { data: rankRequirementCache.get(position), error: null }
   }
+  const result = await supabase
+    .from('rank_requirements')
+    .select('next_position, favor_required, max_slots')
+    .eq('current_position', position)
+    .maybeSingle()
+  if (!result.error) rankRequirementCache.set(position, result.data || null)
+  return result
 }
 
 export async function getPlayerInventory(characterId) {
@@ -77,9 +84,10 @@ export async function getPlayerInventory(characterId) {
 export function getPlayerActivities(characterId) {
   return supabase
     .from('character_history')
-    .select('*')
+    .select('id, action, value, type, created_at')
     .eq('character_id', characterId)
     .order('created_at', { ascending: false })
+    .limit(30)
 }
 
 export function getPlayerRoleSubmissions(characterId) {

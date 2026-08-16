@@ -81,7 +81,7 @@ export default function FollowerCard({
             <article className="follower-row" key={follower.id}>
               <div className="follower-avatar">
                 {follower.image_url ? (
-                  <img src={follower.image_url} alt="" />
+                  <img src={follower.image_url} alt="" loading="lazy" decoding="async" />
                 ) : (
                   <span>{follower.name?.slice(0, 1) || 'ผ'}</span>
                 )}

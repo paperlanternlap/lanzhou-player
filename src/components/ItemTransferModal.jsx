@@ -117,7 +117,7 @@ export default function ItemTransferModal({
               >
                 <span className="recipient-avatar">
                   {character.avatar_url ? (
-                    <img src={character.avatar_url} alt="" />
+                    <img src={character.avatar_url} alt="" loading="lazy" decoding="async" />
                   ) : (
                     character.character_name?.slice(0, 1)
                   )}

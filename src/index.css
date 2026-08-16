@@ -1861,6 +1861,14 @@ textarea:focus-visible {
   flex-direction: column;
 }
 
+.shop-loading {
+  min-height: 480px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .shop-intro {
   max-width: 760px;
   padding-right: 44px;

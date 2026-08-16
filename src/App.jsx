@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ActivityCard from './components/ActivityCard'
 import AcquisitionStatusCard from './components/AcquisitionStatusCard'
@@ -25,6 +25,7 @@ import {
   getPlayerFollowers,
   getPlayerInventory,
   getPlayerRoleSubmissions,
+  getRankRequirement,
   getShopFollowers,
   promotePlayerCharacter,
   purchaseCatalogItem,
@@ -62,6 +63,13 @@ function App() {
   const [transferItem, setTransferItem] = useState(null)
   const [missionFollower, setMissionFollower] = useState(null)
   const [npcPurchaseItem, setNpcPurchaseItem] = useState(null)
+  const [shopLoading, setShopLoading] = useState(false)
+  const shopDataLoaded = useRef(false)
+  const shopRequestInFlight = useRef(false)
+  const explorationLocationsLoaded = useRef(false)
+  const explorationLocationsRequest = useRef(null)
+  const characterChoicesLoaded = useRef(false)
+  const characterChoicesRequest = useRef(null)
 
   const loadCharacter = useCallback(async () => {
     if (!characterId) return
@@ -71,6 +79,14 @@ function App() {
       return
     }
     setCharacter(data)
+    const promotionResult = await getRankRequirement(data.position)
+    if (promotionResult.error) return
+    setCharacter((current) => current?.id === data.id ? {
+      ...current,
+      next_position: promotionResult.data?.next_position ?? null,
+      favor_required: promotionResult.data?.favor_required ?? null,
+      max_slots: promotionResult.data?.max_slots ?? null,
+    } : current)
   }, [characterId])
 
   const loadInventory = useCallback(async () => {
@@ -105,22 +121,42 @@ function App() {
   }, [characterId])
 
   const loadExplorationLocations = useCallback(async () => {
-    const { data, error } = await getExplorationLocations()
-    if (error) console.error(error)
-    else setExplorationLocations(data || [])
+    if (explorationLocationsRequest.current) {
+      return explorationLocationsRequest.current
+    }
+    explorationLocationsRequest.current = getExplorationLocations().then(({ data, error }) => {
+      explorationLocationsRequest.current = null
+      if (error) {
+        console.error(error)
+        return null
+      }
+      const locations = data || []
+      setExplorationLocations(locations)
+      explorationLocationsLoaded.current = true
+      return locations
+    })
+    return explorationLocationsRequest.current
   }, [])
 
   const loadShopFollowers = useCallback(async () => {
     const result = await getShopFollowers()
-    if (result.error) console.error(result.error)
-    else setShopFollowers(result.data || [])
+    if (result.error) {
+      console.error(result.error)
+      return false
+    }
+    setShopFollowers(result.data || [])
+    return true
   }, [])
 
   const loadShopItems = useCallback(async () => {
-    if (!characterId) return
+    if (!characterId) return false
     const { data, error } = await getItemCatalog(characterId)
-    if (error) console.error(error)
-    else setShopItems(data || [])
+    if (error) {
+      console.error(error)
+      return false
+    }
+    setShopItems(data || [])
+    return true
   }, [characterId])
 
   const loadAcquisitionRequests = useCallback(async () => {
@@ -135,9 +171,18 @@ function App() {
   }, [characterId, loadActivities, loadCharacter, loadInventory])
 
   const loadCharacterChoices = useCallback(async () => {
-    const { data, error } = await getCharacterChoices()
-    if (error) console.error(error)
-    else setCharacterChoices(data || [])
+    if (characterChoicesRequest.current) return characterChoicesRequest.current
+    characterChoicesRequest.current = getCharacterChoices().then(({ data, error }) => {
+      characterChoicesRequest.current = null
+      if (error) {
+        console.error(error)
+        return false
+      }
+      setCharacterChoices(data || [])
+      characterChoicesLoaded.current = true
+      return true
+    })
+    return characterChoicesRequest.current
   }, [])
 
   useEffect(() => {
@@ -149,11 +194,7 @@ function App() {
         loadActivities(),
         loadRoleSubmissions(),
         loadFollowers(),
-        loadExplorationLocations(),
-        loadShopFollowers(),
-        loadShopItems(),
         loadAcquisitionRequests(),
-        loadCharacterChoices(),
       ])
     }, 0)
     return () => window.clearTimeout(timer)
@@ -164,12 +205,24 @@ function App() {
     loadCharacter,
     loadFollowers,
     loadInventory,
-    loadExplorationLocations,
-    loadCharacterChoices,
-    loadShopFollowers,
-    loadShopItems,
     loadAcquisitionRequests,
   ])
+
+  async function handleOpenShop() {
+    setShowShop(true)
+    if (shopDataLoaded.current || shopRequestInFlight.current) return
+    shopRequestInFlight.current = true
+    setShopLoading(true)
+    const results = await Promise.all([loadShopFollowers(), loadShopItems()])
+    shopDataLoaded.current = results.every(Boolean)
+    shopRequestInFlight.current = false
+    setShopLoading(false)
+  }
+
+  async function handleSelectItem(item) {
+    setSelectedItem(item)
+    if (!characterChoicesLoaded.current) await loadCharacterChoices()
+  }
 
   async function handleExchange(follower) {
     const { error } = await purchaseFollower(characterId, follower.id)
@@ -216,7 +269,8 @@ function App() {
     await Promise.all([loadCharacter(), loadActivities()])
   }
 
-  function handleStartExploration(follower) {
+  async function handleStartExploration(follower) {
+    if (!explorationLocationsLoaded.current) await loadExplorationLocations()
     setMissionFollower(follower)
   }
 
@@ -235,14 +289,17 @@ function App() {
   }
 
   async function handleStartAllExplorations() {
-    if (!explorationLocations.length) {
+    const locations = explorationLocationsLoaded.current
+      ? explorationLocations
+      : await loadExplorationLocations()
+    if (!locations?.length) {
       alert('ยังไม่มีพื้นที่สำรวจ กรุณาให้สต๊าฟตั้งค่าพื้นที่ก่อน')
       return
     }
     const readyFollowers = followers.filter((follower) => follower.status === 'idle')
     const dispatchPlans = readyFollowers.map((follower) => ({
       follower,
-      locations: explorationLocations.filter((location) =>
+      locations: locations.filter((location) =>
         canFollowerAccessLocation(follower, location),
       ),
     }))
@@ -490,7 +547,7 @@ function App() {
             <PromotionCard character={character} onPromote={handlePromote} />
             <PointCard
               character={character}
-              onOpenExchange={() => setShowShop(true)}
+              onOpenExchange={handleOpenShop}
               onOpenFavorExchange={() => setShowFavorExchange(true)}
             />
           </>
@@ -502,7 +559,7 @@ function App() {
               onStartExploration={handleStartExploration}
               onStartAllExplorations={handleStartAllExplorations}
             />
-            <InventoryCard inventory={inventory} onSelectItem={setSelectedItem} />
+            <InventoryCard inventory={inventory} onSelectItem={handleSelectItem} />
           </>
         }
         right={
@@ -539,6 +596,7 @@ function App() {
           onBuyItem={handleBuyItem}
           onBuyFollower={handleExchange}
           onClose={() => setShowShop(false)}
+          loading={shopLoading}
         />
       )}
 
