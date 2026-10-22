@@ -79,9 +79,7 @@ export default function FollowerMissionModal({
 
     if (result?.error) {
       setError(
-        result.error.message?.includes('weekly mission limit')
-          ? 'ผู้ติดตามคนนี้ใช้สิทธิ์สำรวจประจำสัปดาห์ครบแล้ว'
-          : result.error.message?.includes('already on a mission')
+        result.error.message?.includes('already on a mission')
             ? 'ผู้ติดตามคนนี้กำลังทำภารกิจอยู่'
             : result.error.message?.includes('cannot access')
               ? 'ผู้ติดตามคนนี้ไม่มีสิทธิ์เข้าถึงพื้นที่ดังกล่าว'

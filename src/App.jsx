@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import ActivityCard from './components/ActivityCard'
 import AcquisitionStatusCard from './components/AcquisitionStatusCard'
 import FollowerCard from './components/FollowerCard'
@@ -18,7 +18,6 @@ import {
   exchangeFavor,
   getAcquisitionRequests,
   getCharacterChoices,
-  getExplorationLocations,
   getItemCatalog,
   getPlayerActivities,
   getPlayerCharacter,
@@ -30,14 +29,13 @@ import {
   promotePlayerCharacter,
   purchaseCatalogItem,
   purchaseFollower,
-  startExploration,
   submitAcquisitionRequest,
   submitRole,
 } from './services/playerService'
-import { canFollowerAccessLocation } from './utils/followerExploration'
+import './pages/exploration.css'
 
 const FavorExchangeModal = lazy(() => import('./components/FavorExchangeModal'))
-const FollowerMissionModal = lazy(() => import('./components/FollowerMissionModal'))
+const Exploration = lazy(() => import('./pages/Exploration'))
 const ItemDetailModal = lazy(() => import('./components/ItemDetailModal'))
 const ItemTransferModal = lazy(() => import('./components/ItemTransferModal'))
 const NpcPurchaseRollModal = lazy(() => import('./components/NpcPurchaseRollModal'))
@@ -45,6 +43,7 @@ const ShopDialog = lazy(() => import('./components/ShopDialog'))
 
 function App() {
   const { characterId, logout } = useAuth()
+  const navigate = useNavigate()
   const [showShop, setShowShop] = useState(false)
   const [showFavorExchange, setShowFavorExchange] = useState(false)
   const [favorAmount, setFavorAmount] = useState(100)
@@ -54,20 +53,17 @@ function App() {
   const [roleSubmissions, setRoleSubmissions] = useState([])
   const [submittingRole, setSubmittingRole] = useState(false)
   const [followers, setFollowers] = useState([])
-  const [explorationLocations, setExplorationLocations] = useState([])
   const [shopFollowers, setShopFollowers] = useState([])
   const [shopItems, setShopItems] = useState([])
   const [acquisitionRequests, setAcquisitionRequests] = useState([])
   const [characterChoices, setCharacterChoices] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
   const [transferItem, setTransferItem] = useState(null)
-  const [missionFollower, setMissionFollower] = useState(null)
+  const [mapFollowerId, setMapFollowerId] = useState(null)
   const [npcPurchaseItem, setNpcPurchaseItem] = useState(null)
   const [shopLoading, setShopLoading] = useState(false)
   const shopDataLoaded = useRef(false)
   const shopRequestInFlight = useRef(false)
-  const explorationLocationsLoaded = useRef(false)
-  const explorationLocationsRequest = useRef(null)
   const characterChoicesLoaded = useRef(false)
   const characterChoicesRequest = useRef(null)
 
@@ -119,24 +115,6 @@ function App() {
     }
     setFollowers(result.data || [])
   }, [characterId])
-
-  const loadExplorationLocations = useCallback(async () => {
-    if (explorationLocationsRequest.current) {
-      return explorationLocationsRequest.current
-    }
-    explorationLocationsRequest.current = getExplorationLocations().then(({ data, error }) => {
-      explorationLocationsRequest.current = null
-      if (error) {
-        console.error(error)
-        return null
-      }
-      const locations = data || []
-      setExplorationLocations(locations)
-      explorationLocationsLoaded.current = true
-      return locations
-    })
-    return explorationLocationsRequest.current
-  }, [])
 
   const loadShopFollowers = useCallback(async () => {
     const result = await getShopFollowers()
@@ -269,82 +247,9 @@ function App() {
     await Promise.all([loadCharacter(), loadActivities()])
   }
 
-  async function handleStartExploration(follower) {
-    if (!explorationLocationsLoaded.current) await loadExplorationLocations()
-    setMissionFollower(follower)
-  }
-
-  async function handleConfirmExploration({ followerId, locationId, objective }) {
-    const result = await startExploration({
-      characterId,
-      followerId,
-      locationId,
-      objective,
-    })
-    if (!result.error) {
-      setMissionFollower(null)
-      await Promise.all([loadFollowers(), loadActivities()])
-    }
-    return result
-  }
-
-  async function handleStartAllExplorations() {
-    const locations = explorationLocationsLoaded.current
-      ? explorationLocations
-      : await loadExplorationLocations()
-    if (!locations?.length) {
-      alert('ยังไม่มีพื้นที่สำรวจ กรุณาให้สต๊าฟตั้งค่าพื้นที่ก่อน')
-      return
-    }
-    const readyFollowers = followers.filter((follower) => follower.status === 'idle')
-    const dispatchPlans = readyFollowers.map((follower) => ({
-      follower,
-      locations: locations.filter((location) =>
-        canFollowerAccessLocation(follower, location),
-      ),
-    }))
-    const eligiblePlans = dispatchPlans.filter((plan) => plan.locations.length)
-    const noAccessCount = dispatchPlans.length - eligiblePlans.length
-    if (!eligiblePlans.length) {
-      alert('ยังไม่มีผู้ติดตามคนใดที่ได้รับสิทธิ์เข้าถึงพื้นที่สำรวจ')
-      return
-    }
-    const results = await Promise.all(
-      eligiblePlans.map(({ follower, locations }) => {
-        const bestLocation = locations.reduce((best, location) => {
-          const talentScore = (follower.talents || [])
-            .filter((talent) => location.tags?.includes(talent.talent_key))
-            .reduce((total, talent) => total + talent.modifier_percent, 0)
-          const successChance = Math.max(
-            5,
-            Math.min(
-              95,
-              Number(location.base_success_percent ?? 60) + talentScore,
-            ),
-          )
-          return !best || successChance > best.successChance
-            ? { location, successChance }
-            : best
-        }, null)?.location
-        return startExploration({
-          characterId,
-          followerId: follower.id,
-          locationId: bestLocation.id,
-          objective: 'สำรวจและรวบรวมข้อมูลทั่วไป',
-        })
-      }),
-    )
-    const failedCount = results.filter((result) => result.error).length
-    if (failedCount || noAccessCount) {
-      alert(
-        `ส่งสำรวจไม่สำเร็จ ${failedCount + noAccessCount} คน` +
-          (noAccessCount ? ` · ไม่มีพื้นที่เข้าถึง ${noAccessCount} คน` : ''),
-      )
-    }
-    if (failedCount === eligiblePlans.length) {
-      return
-    }
-    await Promise.all([loadFollowers(), loadActivities()])
+  function handleStartExploration(follower) {
+    setMapFollowerId(follower.id)
+    navigate('/exploration')
   }
 
   async function handleBuyItem(item) {
@@ -557,7 +462,10 @@ function App() {
             <FollowerCard
               followers={followers}
               onStartExploration={handleStartExploration}
-              onStartAllExplorations={handleStartAllExplorations}
+              onExploreSelf={() => {
+                setMapFollowerId(null)
+                navigate('/exploration')
+              }}
             />
             <InventoryCard inventory={inventory} onSelectItem={handleSelectItem} />
           </>
@@ -636,14 +544,6 @@ function App() {
         />
       )}
 
-      {missionFollower && (
-        <FollowerMissionModal
-          follower={missionFollower}
-          locations={explorationLocations}
-          onClose={() => setMissionFollower(null)}
-          onSubmit={handleConfirmExploration}
-        />
-      )}
       </Suspense>
     </div>
   )
@@ -655,6 +555,12 @@ function App() {
         element={characterId ? <Navigate to="/dashboard" replace /> : <Login />}
       />
       <Route path="/dashboard" element={dashboard} />
+      <Route path="/exploration" element={
+        <Suspense fallback={<div className="loading-page">กำลังเปิดแผนที่…</div>}>
+          <Exploration key={characterId || 'visitor'} characterId={characterId} initialFollowerId={mapFollowerId}
+            onChanged={() => Promise.all([loadFollowers(), loadInventory(), loadActivities()])} />
+        </Suspense>
+      } />
       <Route
         path="*"
         element={<Navigate to={characterId ? '/dashboard' : '/login'} replace />}

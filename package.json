@@ -5,6 +5,7 @@
   "homepage": "https://paperlanternlap.github.io/lanzhou-player",
   "type": "module",
   "scripts": {
+    "test:exploration": "node --test tests/palace-map.test.mjs",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

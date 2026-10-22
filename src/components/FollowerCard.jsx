@@ -11,7 +11,7 @@ const statusLabels = {
 export default function FollowerCard({
   followers = [],
   onStartExploration,
-  onStartAllExplorations,
+  onExploreSelf,
 }) {
   const [page, setPage] = useState(1)
   const [activeFilter, setActiveFilter] = useState('all')
@@ -46,13 +46,8 @@ export default function FollowerCard({
           <span className="eyebrow">จัดการภารกิจ</span>
           <h2>ผู้ติดตาม <small>{followers.length} คน</small></h2>
         </div>
-        <button
-          className="secondary-button compact-button"
-          type="button"
-          disabled={!readyCount}
-          onClick={() => onStartAllExplorations?.()}
-        >
-          ส่งพร้อมกัน {readyCount ? `(${readyCount})` : ''}
+        <button className="secondary-button compact-button" type="button" onClick={onExploreSelf}>
+          สำรวจ
         </button>
       </div>
 
@@ -117,7 +112,7 @@ export default function FollowerCard({
               <button
                 className="row-action"
                 type="button"
-                disabled={isExploring}
+                disabled={follower.status?.trim() !== 'idle' || !follower.active}
                 onClick={() => onStartExploration?.(follower)}
               >
                 {isExploring ? 'ส่งแล้ว' : 'ส่งสำรวจ'}
@@ -127,7 +122,7 @@ export default function FollowerCard({
         }) : (
           <div className="empty-state">
             <strong>ไม่มีผู้ติดตามในรายการนี้</strong>
-            <span>ลองเลือกตัวกรองอื่น</span>
+            <span>{followers.length ? 'ลองเลือกตัวกรองอื่น' : 'เมื่อมีผู้ติดตาม กดส่งสำรวจข้างชื่อเพื่อเลือกจุดบนแผนที่'}</span>
           </div>
         )}
       </div>
