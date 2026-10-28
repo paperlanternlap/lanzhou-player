@@ -110,8 +110,8 @@ export default function FollowerMissionModal({
 
         <div className="mission-follower">
           <div className="follower-avatar">
-            {follower.image_url ? (
-              <img src={follower.image_url} alt="" />
+            {follower.avatar_url ? (
+              <img src={follower.avatar_url} alt="" />
             ) : (
               <span>{follower.name?.slice(0, 1)}</span>
             )}

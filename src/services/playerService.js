@@ -2,12 +2,12 @@ import { supabase } from '../supabase'
 
 const TALENT_RELATION_ERRORS = ['follower_talents']
 const FOLLOWER_FIELDS = `
-  id, name, description, image_url, status, price, active, follower_type,
+  id, name, description, avatar_url, status, cost, active, follower_type,
   owner_character_id, access_areas, weekly_mission_limit,
   talents:follower_talents(id, talent_key, label, modifier_percent)
 `
 const FOLLOWER_FIELDS_WITHOUT_TALENTS =
-  'id, name, description, image_url, status, price, active, follower_type, owner_character_id, access_areas, weekly_mission_limit'
+  'id, name, description, avatar_url, status, cost, active, follower_type, owner_character_id, access_areas, weekly_mission_limit'
 const rankRequirementCache = new Map()
 
 function isMissingTalentRelation(error) {
