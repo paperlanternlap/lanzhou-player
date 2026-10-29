@@ -5859,3 +5859,39 @@ body,
     margin-top: 7px;
   }
 }
+
+/* Close controls live in their own row so they can never cover a modal title. */
+.dialog > .dialog-close {
+  position: sticky;
+  display: grid;
+  place-items: center;
+  top: 0;
+  right: auto;
+  left: auto;
+  margin: -10px 0 8px auto;
+}
+
+.dialog > .eyebrow:first-of-type,
+.dialog > h2,
+.dialog > .dialog-intro,
+.shop-dialog .shop-intro {
+  padding-right: 0;
+}
+
+.dialog > .item-detail-heading {
+  padding-right: 80px;
+}
+
+.item-detail-heading .quantity-badge {
+  right: 0;
+}
+
+@media (max-width: 520px) {
+  .dialog > .dialog-close {
+    margin-top: -6px;
+  }
+
+  .dialog > .item-detail-heading {
+    padding-right: 0;
+  }
+}
