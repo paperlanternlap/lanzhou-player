@@ -13,3 +13,7 @@
 .palace-map-pin.selected { background: #e8bd65; color: #3f2e1b; outline: 3px solid #713a34; z-index: 2; }
 .palace-map-pin:hover, .palace-map-pin:focus-visible { z-index: 3; outline: 3px solid #fff; }
 .palace-map-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 7px 10px; color: #5d5141; font-size: 10px; flex-shrink: 0; }
+
+.palace-map-toolbar button { border-color: #99917f; border-radius: 2px; color: #354d47; background: #f3efe4; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 58%); font-weight: 700; }
+.palace-map-toolbar button:hover:not(:disabled), .palace-map-toolbar button[aria-pressed=true] { border-color: #53665f; color: #f8f4e9; background: #53665f; }
+.palace-map-toolbar button:disabled { color: #a5a097; background: #e5e1d7; opacity: .7; }

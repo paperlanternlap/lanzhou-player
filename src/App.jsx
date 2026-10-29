@@ -247,11 +247,6 @@ function App() {
     await Promise.all([loadCharacter(), loadActivities()])
   }
 
-  function handleStartExploration(follower) {
-    setMapFollowerId(follower.id)
-    navigate('/exploration')
-  }
-
   async function handleBuyItem(item) {
     if (item.fulfillment_type === 'staff_request') {
       const currencyLabel = item.price_currency === 'favor' ? 'โปรดปราน' : 'RP'
@@ -457,19 +452,16 @@ function App() {
             />
           </>
         }
-        center={
-          <>
-            <FollowerCard
-              followers={followers}
-              onStartExploration={handleStartExploration}
-              onExploreSelf={() => {
-                setMapFollowerId(null)
-                navigate('/exploration')
-              }}
-            />
-            <InventoryCard inventory={inventory} onSelectItem={handleSelectItem} />
-          </>
+        followers={
+          <FollowerCard
+            followers={followers}
+            onExploreSelf={() => {
+              setMapFollowerId(null)
+              navigate('/exploration')
+            }}
+          />
         }
+        inventory={<InventoryCard inventory={inventory} onSelectItem={handleSelectItem} />}
         right={
           <>
             <RoleSubmissionCard

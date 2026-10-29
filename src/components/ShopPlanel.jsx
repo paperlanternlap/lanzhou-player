@@ -112,9 +112,9 @@ export default function ShopPanel({
   return (
     <div className="shop-panel">
       <div className="shop-intro">
-        <span className="eyebrow">บัญชีสิ่งของประจำวัง</span>
-        <h2>เบิกของและจัดหา</h2>
-        <p>เลือกช่องทางที่ตัวละครเข้าถึงได้ ส่วนของจากการสำรวจ ภารกิจ และเหตุการณ์จะได้รับผ่านเนื้อเรื่อง</p>
+        <span className="eyebrow">โรงเบิกหลวง</span>
+        <h2>เบิกของ</h2>
+        <p>เลือกของที่ต้องการ หรือดูผู้ติดตามที่เปิดรับ</p>
       </div>
 
       <div className="shop-toolbar">
@@ -211,8 +211,12 @@ export default function ShopPanel({
               : isItem
                 ? isSpecialEvent
                   ? 'แลกสิทธิ์เหตุการณ์'
-                  : activeSection === 'restricted' ? 'เจรจาซื้อ' : entry.action_label
-                : 'รับเข้าสังกัด'
+                  : activeSection === 'restricted'
+                    ? 'เจรจาซื้อ'
+                    : activeSection === 'external_legal'
+                      ? 'สั่งจัดหา'
+                      : 'เบิกของ'
+                : 'รับเข้าตำหนัก'
 
           return (
             <article

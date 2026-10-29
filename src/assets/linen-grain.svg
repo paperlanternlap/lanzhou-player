@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <filter id="linen">
+    <feTurbulence type="fractalNoise" baseFrequency=".16 .72" numOctaves="2" seed="29"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncA type="table" tableValues="0 .1"/>
+    </feComponentTransfer>
+  </filter>
+  <rect width="120" height="120" fill="#f1ede3"/>
+  <g stroke="#756f63" stroke-width=".35" opacity=".08">
+    <path d="M0 7h120M0 19h120M0 31h120M0 43h120M0 55h120M0 67h120M0 79h120M0 91h120M0 103h120M0 115h120"/>
+    <path d="M7 0v120M19 0v120M31 0v120M43 0v120M55 0v120M67 0v120M79 0v120M91 0v120M103 0v120M115 0v120"/>
+  </g>
+  <rect width="120" height="120" filter="url(#linen)" opacity=".45"/>
+</svg>

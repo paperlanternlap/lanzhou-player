@@ -70,6 +70,11 @@ textarea:focus-visible {
   min-height: 100vh;
 }
 
+body,
+.login-page {
+  background-image: none;
+}
+
 .app-topbar {
   position: sticky;
   z-index: 20;
@@ -175,6 +180,22 @@ textarea:focus-visible {
   grid-template-columns: minmax(0, 1.55fr) minmax(220px, .75fr);
   align-items: stretch;
   gap: 12px;
+}
+
+.dashboard-followers,
+.dashboard-inventory {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
+.dashboard-followers > .panel,
+.dashboard-inventory > .panel {
+  width: 100%;
+}
+
+.mobile-app-nav {
+  display: none;
 }
 
 .panel {
@@ -2929,6 +2950,7 @@ textarea:focus-visible {
   }
 
   .dashboard-main > .panel,
+  .dashboard-main > div > .panel,
   .dashboard-activity > .activity-panel {
     height: 100%;
   }
@@ -3024,6 +3046,465 @@ textarea:focus-visible {
 
   .shop-pagination {
     align-items: center;
+  }
+}
+
+/* Licensed botanical artwork supplied by the community owner. */
+.panel,
+.dialog {
+  position: relative;
+  overflow: hidden;
+}
+
+.panel > *,
+.dialog > * {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card::after,
+.follower-panel::before,
+.inventory-panel::before,
+.activity-panel::before,
+.shop-dialog::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.profile-card::after {
+  top: -12px;
+  right: -12px;
+  bottom: auto;
+  width: 190px;
+  height: 175px;
+  background: url("./assets/art/owl-blossom.jpg") 63% 40% / 360px auto no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse at 68% 48%, #000 18%, rgb(0 0 0 / 86%) 38%, transparent 74%);
+  mask-image: radial-gradient(ellipse at 68% 48%, #000 18%, rgb(0 0 0 / 86%) 38%, transparent 74%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  opacity: .13;
+}
+
+.follower-panel::before {
+  right: -110px;
+  bottom: -120px;
+  width: 440px;
+  height: 430px;
+  background: url("./assets/art/cherry-blossom.jpg") center / cover no-repeat;
+  opacity: .065;
+}
+
+.inventory-panel::before {
+  right: -88px;
+  bottom: -60px;
+  width: 300px;
+  height: 340px;
+  background: url("./assets/art/pink-hydrangea.jpg") 58% center / cover no-repeat;
+  opacity: .075;
+}
+
+.activity-panel::before {
+  right: -120px;
+  bottom: -100px;
+  width: 360px;
+  height: 340px;
+  background: url("./assets/art/camellia-bees.jpg") right bottom / cover no-repeat;
+  opacity: .055;
+}
+
+.shop-dialog::after {
+  right: -120px;
+  bottom: -160px;
+  width: 560px;
+  height: 620px;
+  background: url("./assets/art/cherry-blossom.jpg") center / cover no-repeat;
+  opacity: .05;
+}
+
+.login-page::after {
+  inset: 0;
+  background: url("./assets/art/camellia-bees.jpg") center / cover no-repeat;
+  opacity: .42;
+}
+
+.login-card {
+  background-color: rgb(243 240 232 / 94%);
+}
+
+@media (min-width: 860px) {
+  .login-card {
+    transform: translateX(-18vw);
+  }
+}
+
+@media (max-width: 760px) {
+  .login-page::after {
+    background-position: 66% center;
+    opacity: .32;
+  }
+
+  .profile-card::after {
+    top: -8px;
+    right: -6px;
+    width: 180px;
+    height: 165px;
+    background-position: 63% 40%;
+    background-size: 340px auto;
+    opacity: .11;
+  }
+
+  .follower-panel::before,
+  .inventory-panel::before,
+  .activity-panel::before {
+    opacity: .045;
+  }
+
+  .profile-avatar {
+    width: 66px;
+    height: 66px;
+    flex-basis: 66px;
+    overflow: hidden;
+    border: 2px solid #566b63;
+    border-radius: 50%;
+    clip-path: none;
+    background: #eee9de;
+    box-shadow:
+      0 0 0 3px #eee9de,
+      0 0 0 4px #b19a67,
+      0 5px 12px rgb(49 45 38 / 18%);
+  }
+
+  .profile-avatar img {
+    border-radius: 50%;
+  }
+
+  .follower-heading .exploration-entry-button {
+    width: 100%;
+    min-height: 42px;
+    color: #fffdf7;
+    background-color: #354d47;
+    box-shadow:
+      inset 0 -3px 0 #b19a67,
+      0 5px 12px rgb(53 77 71 / 20%);
+  }
+}
+
+/* Absolute final override: never stretch the lattice artwork across data panels. */
+.panel,
+.dialog,
+.login-card {
+  border: 1px solid #c4bfb3;
+  background-color: #f3f0e8;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+}
+
+/* Scroll-sheet panels: horizontal rollers only, so tall content never gains mid-panel lines. */
+html,
+body,
+.login-page {
+  background-color: #cec7bb;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+}
+
+.panel,
+.dialog,
+.login-card {
+  margin-block: 8px;
+  border: 12px solid transparent;
+  border-right-width: 7px;
+  border-left-width: 7px;
+  border-image-source: url("./assets/scroll-frame.svg");
+  border-image-slice: 18 18 18 18;
+  border-image-width: 12px 7px;
+  border-image-outset: 5px 4px;
+  border-image-repeat: stretch;
+  background-color: #f1ecdf;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+  box-shadow: 0 10px 22px rgb(72 62 50 / 10%);
+}
+
+.shop-dialog,
+.login-card {
+  border-top-width: 12px;
+}
+
+.dashboard-sidebar,
+.dashboard-main,
+.dashboard-activity {
+  gap: 18px;
+}
+
+@media (max-width: 760px) {
+  html,
+  body,
+  .login-page {
+    background-image: url("./assets/paper-grain.svg");
+    background-size: 180px 180px;
+  }
+
+  .panel,
+  .dialog,
+  .login-card {
+    margin-block: 7px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-image-width: 10px 5px;
+    border-image-outset: 4px 2px;
+  }
+}
+
+.shop-dialog,
+.login-card {
+  border-top: 3px solid #354d47;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dialog,
+  .login-card {
+    background-size: 180px 180px;
+  }
+}
+
+/* Final frame cleanup: data panels use one quiet paper edge only. */
+.panel,
+.dialog,
+.login-card {
+  border: 1px solid #c4bfb3;
+  background-color: #f3f0e8;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+}
+
+.panel-heading::after {
+  right: 0;
+  left: 0;
+  background: #d1cdc2;
+}
+
+.shop-dialog,
+.login-card {
+  border-top: 3px solid #354d47;
+}
+
+.shop-intro {
+  border-bottom: 1px solid #817e73;
+}
+
+.mobile-app-nav {
+  border-top: 2px solid #354d47;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dialog,
+  .login-card {
+    background-size: 180px 180px;
+  }
+}
+
+/* Keep long data panels quiet: decorative frames distort when panels grow. */
+.panel,
+.dialog,
+.login-card {
+  border: 1px solid #c4bfb3;
+  background-color: #f3f0e8;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+}
+
+.panel-heading::after {
+  right: 0;
+  left: 0;
+  background: #d1cdc2;
+}
+
+.shop-dialog,
+.login-card {
+  border-top: 3px solid #354d47;
+}
+
+.shop-intro {
+  border-bottom: 1px solid #817e73;
+}
+
+.mobile-app-nav {
+  border-top: 2px solid #354d47;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dialog,
+  .login-card {
+    background-size: 180px 180px;
+  }
+}
+
+/* Editorial palace-book layout: neutral paper, lattice lines, restrained blossom. */
+:root {
+  --ink: #282c2a;
+  --muted: #74756e;
+  --paper: #f3f0e8;
+  --paper-soft: #ebe8df;
+  --line: #d1cdc2;
+  --line-strong: #aaa89e;
+  --wine: #9a473d;
+  --wine-dark: #79362f;
+  --wine-soft: #eee1de;
+  --gold: #a28a59;
+  --green: #50645e;
+  --green-soft: #dfe5e1;
+  --jade-dark: #354d47;
+  --jade: #5f756e;
+  --jade-light: #a9b8b2;
+  --shadow: 0 9px 24px rgb(48 45 39 / 8%);
+}
+
+html,
+body,
+.login-page {
+  background-color: #d9d4c9;
+}
+
+.player-app::before {
+  display: none;
+}
+
+.app-topbar {
+  min-height: 58px;
+  border-bottom: 4px double #a68d5d;
+  color: #f5f2e9;
+  background: #354d47;
+}
+
+.panel,
+.dialog,
+.login-card {
+  border: 1px solid #bdb8ab;
+  border-radius: 0;
+  background-color: var(--paper);
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  margin-top: 0;
+}
+
+.panel-heading::after {
+  background: #c8c2b4;
+}
+
+.profile-card::after {
+  top: auto;
+  right: -26px;
+  bottom: -50px;
+  width: 170px;
+  height: 140px;
+  background-position: left top;
+  background-size: 420px auto;
+  opacity: .1;
+}
+
+.profile-avatar {
+  border: 2px solid #7e8c86;
+  border-radius: 0;
+  clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%);
+}
+
+.follower-avatar {
+  border-radius: 50%;
+}
+
+.eyebrow {
+  color: var(--wine);
+}
+
+.score-tile,
+.inventory-row,
+.segmented-control,
+.segmented-control button,
+.status-pill,
+.primary-button,
+.secondary-button,
+.row-action,
+.pagination button {
+  border-radius: 2px;
+}
+
+.primary-button {
+  border-color: var(--jade-dark);
+  background: var(--jade-dark);
+}
+
+.score-tile--rp {
+  border-color: #bac5c0;
+  background: #e4e9e5;
+}
+
+.score-tile--favor {
+  border-color: #d6bfba;
+  background: #eee3e0;
+}
+
+.segmented-control {
+  border-color: #c4c0b4;
+  background: #e5e1d7;
+}
+
+.shop-dialog {
+  border-top: 4px double var(--jade-dark);
+}
+
+.shop-intro {
+  border-bottom: 3px double var(--jade-dark);
+}
+
+.shop-tabs {
+  border-bottom: 1px solid #bdb8ab;
+}
+
+.shop-card {
+  border-bottom-color: #c8c2b5;
+}
+
+.mobile-app-nav {
+  border-top: 4px double var(--jade-dark);
+  background-color: var(--paper);
+  background-image: url("./assets/paper-grain.svg");
+}
+
+.login-page::after {
+  background-position: left top;
+  background-size: auto 100%;
+  opacity: .28;
+}
+
+.login-card {
+  border-top: 4px double var(--jade-dark);
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dialog,
+  .login-card {
+    background-size: 150% 100%, 180px 180px;
+  }
+
+  .profile-card::after {
+    opacity: .08;
   }
 }
 
@@ -3707,5 +4188,1674 @@ textarea:focus-visible {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
+  }
+}
+
+/* Player portal polish: clearer reading scale, hierarchy, and responsive density */
+.player-dashboard {
+  width: min(1480px, 100%);
+  grid-template-columns: 280px minmax(560px, 1fr) 320px;
+  gap: 16px;
+  padding: 18px 20px 30px;
+}
+
+.dashboard-sidebar,
+.dashboard-activity,
+.dashboard-main {
+  gap: 14px;
+}
+
+.dashboard-main {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .8fr);
+}
+
+.panel {
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.player-dashboard .eyebrow {
+  margin-bottom: 3px;
+  font-size: 11px;
+}
+
+.player-dashboard .panel-heading h2 {
+  font-size: 19px;
+  text-wrap: balance;
+}
+
+.panel-heading h2 small {
+  font-size: 11px;
+}
+
+.player-dashboard :is(.primary-button, .secondary-button, .row-action) {
+  min-height: 38px;
+  font-size: 13px;
+}
+
+.profile-card__main {
+  gap: 14px;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  flex-basis: 72px;
+}
+
+.profile-copy h1 {
+  font-size: 22px;
+}
+
+.profile-details {
+  gap: 4px 9px;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.score-panel {
+  padding: 14px;
+}
+
+.score-tile {
+  padding: 12px;
+}
+
+.score-tile > span,
+.score-tile__heading {
+  font-size: 12px;
+}
+
+.score-tile strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-tile__heading button {
+  width: 30px;
+  height: 30px;
+  flex-basis: 30px;
+}
+
+.promotion-route,
+.promotion-meta,
+.empty-copy {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.segmented-control button {
+  min-height: 36px;
+  font-size: 12px;
+}
+
+.follower-panel {
+  padding: 18px;
+}
+
+.follower-row {
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px 4px;
+}
+
+.follower-avatar {
+  width: 46px;
+  height: 46px;
+}
+
+.follower-title h3 {
+  font-size: 15px;
+}
+
+.status-pill {
+  font-size: 10px;
+}
+
+.follower-copy p {
+  margin: 4px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.follower-skill {
+  font-size: 11px;
+}
+
+.inventory-panel {
+  padding: 18px;
+}
+
+.inventory-list {
+  gap: 8px;
+}
+
+.inventory-row {
+  min-height: 46px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.inventory-quantity i {
+  font-size: 10px;
+}
+
+.activity-panel {
+  padding: 18px;
+}
+
+.activity-row {
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 11px 0;
+}
+
+.activity-row h3 {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.activity-row p {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.activity-row time {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.role-submission-row a,
+.role-submission-empty strong {
+  font-size: 13px;
+}
+
+.role-submission-row time,
+.role-submission-row small,
+.role-submission-row p,
+.role-status,
+.role-submission-empty {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.pagination button {
+  width: 34px;
+  height: 34px;
+}
+
+.pagination span {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1181px) {
+  .dashboard-main,
+  .dashboard-activity {
+    height: clamp(590px, calc(100vh - 112px), 720px);
+  }
+}
+
+@media (max-width: 1280px) {
+  .player-dashboard {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .dashboard-activity {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(250px, .7fr) minmax(0, 1.3fr);
+  }
+
+  .dashboard-activity .activity-panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .player-dashboard {
+    grid-template-columns: 1fr;
+    padding-inline: 14px;
+  }
+
+  .dashboard-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-card {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-main,
+  .dashboard-activity {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .player-dashboard {
+    padding: 12px 10px 24px;
+  }
+
+  .dashboard-sidebar,
+  .dashboard-main,
+  .dashboard-activity {
+    display: flex;
+  }
+
+  .player-app {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-main {
+    display: contents;
+  }
+
+  .dashboard-mobile-screen {
+    display: none;
+    width: 100%;
+  }
+
+  .mobile-view-home [data-mobile-screen="home"],
+  .mobile-view-followers [data-mobile-screen="followers"],
+  .mobile-view-inventory [data-mobile-screen="inventory"],
+  .mobile-view-records [data-mobile-screen="records"] {
+    display: flex;
+  }
+
+  .mobile-view-home [data-mobile-screen="home"],
+  .mobile-view-records [data-mobile-screen="records"] {
+    flex-direction: column;
+  }
+
+  .mobile-app-nav {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    min-height: 64px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-strong);
+    background: rgb(255 253 249 / 96%);
+    box-shadow: 0 -8px 24px rgb(61 42 29 / 8%);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-app-nav button {
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 2px;
+    border: 0;
+    color: var(--muted);
+    background: transparent;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .mobile-app-nav button > span {
+    width: 20px;
+    height: 3px;
+    background: transparent;
+  }
+
+  .mobile-app-nav button.active {
+    color: var(--wine);
+  }
+
+  .mobile-app-nav button.active > span {
+    background: var(--wine);
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .profile-card__main {
+    padding-right: 0;
+  }
+
+  .profile-copy h1 {
+    font-size: 21px;
+  }
+
+  .activity-row time {
+    display: block;
+  }
+
+  .shop-intro h2 {
+    font-size: 24px;
+  }
+
+  .shop-intro p {
+    font-size: 13px;
+  }
+
+  .shop-section-summary {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .profile-avatar {
+    width: 62px;
+    height: 62px;
+    flex-basis: 62px;
+  }
+
+  .profile-details {
+    display: grid;
+  }
+
+  .profile-details span + span {
+    padding-left: 0;
+  }
+
+  .profile-details span + span::before {
+    content: none;
+  }
+
+  .score-grid {
+    gap: 7px;
+  }
+
+  .score-tile {
+    padding: 10px;
+  }
+
+  .follower-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .follower-row .row-action {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .activity-row {
+    grid-template-columns: 8px minmax(0, 1fr);
+  }
+
+  .activity-row time {
+    grid-column: 2;
+  }
+
+  .shop-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-card h3 {
+    font-size: 19px;
+  }
+}
+
+/* The palace ledger should read like a working register, not a card catalogue. */
+.shop-dialog {
+  width: min(1080px, 100%);
+  padding: 30px 34px 24px;
+}
+
+.shop-intro {
+  max-width: none;
+  padding: 0 48px 18px 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+.shop-intro h2 {
+  font-size: 30px;
+}
+
+.shop-intro p {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.shop-toolbar {
+  align-items: flex-end;
+  margin-top: 0;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.shop-tabs {
+  width: auto;
+  display: flex;
+  flex: 1;
+  gap: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.segmented-control.shop-tabs button {
+  min-height: 52px;
+  justify-content: flex-start;
+  padding: 14px 0 11px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 14px;
+}
+
+.shop-tabs button:hover {
+  color: var(--wine);
+  background: transparent;
+}
+
+.shop-tabs button.active {
+  border-color: var(--wine);
+  color: var(--wine);
+  background: transparent;
+  box-shadow: none;
+}
+
+.shop-section-summary,
+.shop-section-summary.external_legal,
+.shop-section-summary.restricted,
+.shop-section-summary.followers {
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  margin: 0;
+  padding: 18px 0 15px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-section-summary > span,
+.shop-section-summary.external_legal > span,
+.shop-section-summary.restricted > span,
+.shop-section-summary.followers > span {
+  color: var(--wine);
+  font-size: 11px;
+}
+
+.shop-section-summary h3 {
+  font-size: 20px;
+}
+
+.shop-section-summary p {
+  font-size: 13px;
+}
+
+.shop-npc-directory {
+  margin: 0;
+  padding: 16px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-npc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.shop-npc-list button {
+  min-height: 48px;
+  padding: 6px 18px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-npc-list button:first-child {
+  padding-left: 0;
+}
+
+.shop-npc-list button:hover {
+  color: var(--wine);
+  background: transparent;
+}
+
+.shop-npc-list button.active {
+  color: var(--wine);
+  background: transparent;
+  box-shadow: none;
+}
+
+.shop-npc-list button.active span {
+  color: var(--muted);
+}
+
+.shop-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-top: 0;
+}
+
+.shop-card,
+.shop-card--restricted,
+.shop-card--restricted.locked {
+  min-height: 150px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  grid-template-rows: auto auto auto 1fr;
+  column-gap: 28px;
+  padding: 20px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-card__top,
+.shop-card h3,
+.shop-card > p,
+.shop-card > :is(.shop-talents, .fulfillment-note, .secret-lock-note, .secret-channel-detail) {
+  grid-column: 1;
+}
+
+.shop-kind,
+.shop-kind.event {
+  padding: 0;
+  border-radius: 0;
+  color: var(--wine);
+  background: transparent;
+  font-size: 11px;
+}
+
+.shop-card h3 {
+  margin-top: 7px;
+  font-size: 22px;
+}
+
+.shop-card > p {
+  min-height: 0;
+  color: #665b52;
+}
+
+.shop-talents {
+  margin-bottom: 0;
+}
+
+.shop-talents > span,
+.shop-talents > span.negative {
+  gap: 8px;
+  padding: 2px 10px 2px 0;
+  border-radius: 0;
+  color: #5f564e;
+  background: transparent;
+}
+
+.shop-talents > span + span {
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+}
+
+.shop-talents b {
+  color: var(--wine);
+}
+
+.shop-card__footer {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0;
+  padding: 0 8px 0 28px;
+  border-top: 0;
+  border-left: 1px solid var(--line);
+}
+
+.shop-card__footer > strong {
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.shop-card__footer .compact-button {
+  min-width: 132px;
+  margin-top: 12px;
+}
+
+.secret-lock-note,
+.secret-channel-detail {
+  padding: 9px 0 0;
+  border: 0;
+  border-top: 1px dotted var(--line-strong);
+  border-radius: 0;
+  background: transparent;
+}
+
+.secret-risk {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-empty {
+  min-height: 190px;
+  padding: 28px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+@media (max-width: 760px) {
+  .shop-dialog {
+    padding: 20px;
+  }
+
+  .shop-tabs {
+    width: 100%;
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  .segmented-control.shop-tabs button {
+    min-width: max-content;
+  }
+
+  .shop-section-summary {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .shop-card,
+  .shop-card--restricted,
+  .shop-card--restricted.locked {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-card__footer {
+    grid-column: 1;
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .shop-card__footer .compact-button {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .shop-intro {
+    padding-bottom: 14px;
+  }
+
+  .shop-intro h2 {
+    font-size: 26px;
+  }
+
+  .shop-tabs {
+    display: flex;
+  }
+
+  .shop-card__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shop-card__footer > strong {
+    text-align: left;
+  }
+
+  .shop-card__footer .compact-button {
+    width: 100%;
+  }
+}
+
+/* Lanzhou visual language: aged paper, muted jade, ink and seal red. */
+:root {
+  --ink: #252b28;
+  --muted: #707873;
+  --paper: #f2f0e9;
+  --paper-soft: #e9ece7;
+  --line: #d0d6d1;
+  --line-strong: #aeb9b3;
+  --wine: #99483f;
+  --wine-dark: #79362f;
+  --wine-soft: #eee2df;
+  --gold: #9a865f;
+  --green: #596d64;
+  --green-soft: #dce5e0;
+  --jade-dark: #3d5149;
+  --jade: #687d74;
+  --jade-light: #aebdb6;
+  --shadow: 0 10px 24px rgb(35 50 44 / 10%);
+}
+
+html,
+body {
+  background-color: #778880;
+}
+
+body {
+  background-image: url("./assets/jade-clouds.svg");
+  background-attachment: fixed;
+  background-position: center top;
+  background-size: cover;
+}
+
+.app-topbar {
+  border-bottom-color: rgb(226 219 181 / 25%);
+  color: #f2efd9;
+  background: rgb(61 81 73 / 97%);
+  box-shadow: 0 5px 18px rgb(29 42 34 / 14%);
+}
+
+.app-brand > span {
+  border-color: #c7b984;
+  color: #f0dfaa;
+  background: transparent;
+  font-family: "Noto Serif Thai", Georgia, serif;
+}
+
+.app-brand strong {
+  color: #faf6df;
+}
+
+.app-brand small {
+  color: #c7ccb4;
+}
+
+.topbar-logout {
+  border-color: rgb(237 233 205 / 38%);
+  color: #f5f1db;
+  background: transparent;
+}
+
+.topbar-logout:hover {
+  border-color: #eee4b9;
+  color: #26382e;
+  background: #eee9cf;
+}
+
+.panel,
+.dialog,
+.login-card {
+  border-color: rgb(105 105 81 / 35%);
+  background-color: var(--paper);
+  background-image: url("./assets/paper-grain.svg");
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  position: relative;
+  margin-top: 6px;
+  border-radius: 1px 5px 2px 4px;
+}
+
+.panel-heading,
+.profile-card__main {
+  position: relative;
+}
+
+.panel-heading::after {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  left: 0;
+  height: 1px;
+  background: rgb(74 88 70 / 18%);
+  content: "";
+}
+
+.eyebrow {
+  color: var(--wine);
+}
+
+.primary-button {
+  border-color: var(--jade-dark);
+  background: var(--jade-dark);
+}
+
+.primary-button:hover:not(:disabled) {
+  border-color: #26382e;
+  background: #26382e;
+}
+
+.secondary-button,
+.row-action {
+  border-color: #9fa58b;
+  color: var(--jade-dark);
+  background-color: rgb(243 240 222 / 72%);
+}
+
+.secondary-button:hover:not(:disabled),
+.row-action:hover:not(:disabled) {
+  border-color: var(--jade-dark);
+  color: var(--jade-dark);
+  background: #e3e6cf;
+}
+
+.profile-avatar,
+.follower-avatar {
+  border-color: #aaa98d;
+  background-color: #e0e5e1;
+  background-image: url("./assets/paper-grain.svg");
+}
+
+.score-tile--rp {
+  border-color: #b4c2bb;
+  background: #dfe7e2;
+}
+
+.score-tile--favor {
+  border-color: #d4bbb6;
+  background: #eee1df;
+}
+
+.segmented-control {
+  border-color: #c1c3aa;
+  background: #dedcc6;
+}
+
+.segmented-control button.active {
+  color: var(--jade-dark);
+  background-color: var(--paper);
+  background-image: url("./assets/paper-grain.svg");
+  box-shadow: none;
+}
+
+.inventory-row {
+  border-color: #d1ceb4;
+  background-color: rgb(235 232 212 / 68%);
+}
+
+.inventory-row:hover {
+  border-color: #7f8c71;
+  background: #e6e7d2;
+}
+
+.status-pill.ready {
+  color: #40583f;
+  background: #d9e3ca;
+}
+
+.activity-dot.favor,
+.activity-dot.shop,
+.activity-dot.follower_mission {
+  background: var(--wine);
+}
+
+.activity-dot.promotion,
+.activity-dot.follower_result {
+  background: var(--jade);
+  box-shadow: none;
+}
+
+.mobile-app-nav {
+  border-top-color: #929b80;
+  background-color: rgb(243 240 222 / 97%);
+  background-image: url("./assets/paper-grain.svg");
+  box-shadow: 0 -7px 22px rgb(31 48 37 / 12%);
+  backdrop-filter: none;
+}
+
+.mobile-app-nav button.active {
+  color: var(--jade-dark);
+}
+
+.mobile-app-nav button.active > span {
+  background: var(--wine);
+}
+
+.shop-dialog {
+  border-radius: 4px;
+}
+
+.shop-intro {
+  border-bottom-color: var(--jade-dark);
+}
+
+.shop-tabs button.active {
+  border-color: var(--wine);
+  color: var(--jade-dark);
+}
+
+.shop-card__footer > strong,
+.shop-kind,
+.shop-kind.event,
+.shop-section-summary > span,
+.shop-section-summary.external_legal > span,
+.shop-section-summary.restricted > span,
+.shop-section-summary.followers > span {
+  color: var(--wine);
+}
+
+.login-page {
+  background-color: #667970;
+  background-image: url("./assets/jade-clouds.svg");
+  background-position: center;
+  background-size: cover;
+}
+
+.login-page::before,
+.login-page::after {
+  display: none;
+}
+
+.login-ornament {
+  color: rgb(238 233 203 / 10%);
+}
+
+.login-card {
+  border-radius: 1px 5px 2px 4px;
+}
+
+@media (max-width: 760px) {
+  body {
+    background-color: #778880;
+    background-image: url("./assets/jade-clouds.svg");
+    background-position: 60% top;
+    background-size: auto 100dvh;
+  }
+
+  .player-dashboard {
+    min-height: calc(100dvh - 58px - 72px);
+  }
+
+  .panel {
+    border-radius: 1px 5px 2px 4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    width: min(400px, calc(100vw - 32px));
+  }
+}
+
+/* Botanical composition sits in negative space; functional surfaces stay quiet. */
+.player-app {
+  position: relative;
+  isolation: isolate;
+}
+
+.player-app::before {
+  position: fixed;
+  z-index: 0;
+  inset: 62px 0 0;
+  background-image: url("./assets/blossom-branch.svg");
+  background-position: center;
+  background-size: cover;
+  content: "";
+  opacity: .18;
+  pointer-events: none;
+}
+
+.player-dashboard {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card {
+  overflow: hidden;
+}
+
+.profile-card::after {
+  position: absolute;
+  z-index: 0;
+  top: -42px;
+  right: -70px;
+  width: 220px;
+  height: 170px;
+  background: url("./assets/blossom-branch.svg") left top / 520px auto no-repeat;
+  content: "";
+  opacity: .12;
+  pointer-events: none;
+}
+
+.profile-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.login-page::after {
+  position: absolute;
+  display: block;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: url("./assets/blossom-branch.svg") left top / auto 100% no-repeat;
+  content: "";
+  opacity: .58;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  body {
+    background-image: none;
+  }
+
+  .player-app::before {
+    top: 58px;
+    background-position: 44% center;
+    background-size: auto 100%;
+    opacity: .11;
+  }
+}
+
+/* Final visual direction: editorial Chinese paper composition. */
+html,
+body,
+.login-page {
+  background-color: #d9d4c9;
+  background-image: none;
+}
+
+.player-app::before {
+  display: none;
+}
+
+.app-topbar {
+  min-height: 58px;
+  border-bottom: 4px double #a68d5d;
+  background: #354d47;
+}
+
+.panel,
+.dialog,
+.login-card {
+  border: 1px solid #bdb8ab;
+  border-radius: 0;
+  background-color: #f3f0e8;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+  box-shadow: 0 9px 24px rgb(48 45 39 / 8%);
+}
+
+.profile-card::after {
+  top: auto;
+  right: -30px;
+  bottom: -52px;
+  width: 210px;
+  height: 145px;
+  background: url("./assets/blossom-branch.svg") left bottom / 350px auto no-repeat;
+  opacity: .38;
+}
+
+.profile-avatar {
+  border: 2px solid #7e8c86;
+  border-radius: 0;
+  clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%);
+}
+
+.follower-avatar {
+  border-radius: 50%;
+}
+
+.score-tile,
+.inventory-row,
+.segmented-control,
+.segmented-control button,
+.status-pill,
+.primary-button,
+.secondary-button,
+.row-action,
+.pagination button {
+  border-radius: 2px;
+}
+
+.shop-dialog,
+.login-card {
+  border-top: 4px double #354d47;
+}
+
+.shop-intro {
+  border-bottom: 3px double #354d47;
+}
+
+.mobile-app-nav {
+  border-top: 4px double #354d47;
+  background-color: #f3f0e8;
+  background-image: url("./assets/paper-grain.svg");
+}
+
+.login-page::after {
+  position: absolute;
+  display: block;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background:
+    url("./assets/blossom-branch.svg") left top / min(720px, 95vw) auto no-repeat,
+    url("./assets/blossom-branch.svg") right bottom / min(600px, 84vw) auto no-repeat;
+  content: "";
+  opacity: .48;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  body,
+  .login-page {
+    background-color: #d9d4c9;
+    background-image: none;
+  }
+
+  .panel,
+  .dialog,
+  .login-card {
+    background-size: 150% 100%, 180px 180px;
+  }
+}
+
+/* Scroll-sheet panels — final cascade position. */
+html,
+body,
+.login-page {
+  background-color: #cec7bb;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+}
+
+.panel,
+.dialog,
+.login-card {
+  margin-block: 8px;
+  border: 12px solid transparent;
+  border-right-width: 7px;
+  border-left-width: 7px;
+  border-image-source: url("./assets/scroll-frame.svg");
+  border-image-slice: 18;
+  border-image-width: 12px 7px;
+  border-image-outset: 5px 4px;
+  border-image-repeat: stretch;
+  background-color: #f1ecdf;
+  background-image: url("./assets/paper-grain.svg");
+  background-position: center;
+  background-size: 180px 180px;
+  box-shadow: 0 10px 22px rgb(72 62 50 / 10%);
+}
+
+.dashboard-sidebar,
+.dashboard-main,
+.dashboard-activity {
+  gap: 18px;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dialog,
+  .login-card {
+    margin-block: 7px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-image-width: 10px 5px;
+    border-image-outset: 4px 2px;
+  }
+}
+
+/* One ceremonial scroll only; the remaining cards rest like linen sheets. */
+.panel,
+.dialog,
+.login-card {
+  margin-block: 0;
+  border: 1px solid #c6c0b4;
+  border-image: none;
+  background-color: #f1ede3;
+  background-image: url("./assets/linen-grain.svg");
+  background-position: center;
+  background-size: 120px 120px;
+  box-shadow:
+    0 2px 2px rgb(70 61 50 / 8%),
+    0 16px 25px -18px rgb(59 50 41 / 42%);
+}
+
+.profile-card {
+  margin-block: 8px;
+  border: 12px solid transparent;
+  border-right-width: 7px;
+  border-left-width: 7px;
+  border-image-source: url("./assets/scroll-frame.svg");
+  border-image-slice: 18;
+  border-image-width: 12px 7px;
+  border-image-outset: 5px 4px;
+  border-image-repeat: stretch;
+  background-color: #f1ecdf;
+  background-image: url("./assets/paper-grain.svg");
+  background-size: 180px 180px;
+  box-shadow: 0 13px 24px -16px rgb(59 50 41 / 46%);
+}
+
+.dashboard-sidebar,
+.dashboard-main,
+.dashboard-activity {
+  gap: 14px;
+}
+
+@media (max-width: 760px) {
+  .profile-card {
+    margin-block: 7px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-image-width: 10px 5px;
+    border-image-outset: 4px 2px;
+  }
+}
+
+/* Unified palace action controls. */
+.primary-button,
+.dialog-submit,
+.npc-roll-action {
+  border: 1px solid #263f39;
+  border-radius: 2px;
+  color: #f8f4e9;
+  background: #354d47;
+  box-shadow:
+    inset 0 0 0 1px rgb(195 174 125 / 42%),
+    0 4px 8px -6px rgb(35 43 39 / 70%);
+  font-weight: 800;
+}
+
+.primary-button:hover:not(:disabled),
+.dialog-submit:hover:not(:disabled),
+.npc-roll-action:hover:not(:disabled) {
+  border-color: #1f342f;
+  color: #fffdf6;
+  background: #293f39;
+  transform: translateY(-1px);
+}
+
+.secondary-button,
+.row-action,
+.topbar-logout {
+  border: 1px solid #99917f;
+  border-radius: 2px;
+  color: #354d47;
+  background: #f3efe4;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 58%),
+    0 3px 7px -6px rgb(55 49 41 / 68%);
+  font-weight: 700;
+}
+
+.secondary-button:hover:not(:disabled),
+.row-action:hover:not(:disabled),
+.topbar-logout:hover:not(:disabled) {
+  border-color: #53665f;
+  color: #263f39;
+  background: #e7e5da;
+  transform: translateY(-1px);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.row-action:disabled,
+.dialog-submit:disabled {
+  border-color: #c9c4b8;
+  color: #99968d;
+  background: #e8e4da;
+  box-shadow: none;
+  opacity: .72;
+}
+
+.score-tile__heading button {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border: 1px solid #9a473d;
+  border-radius: 50%;
+  color: #9a473d;
+  background: #f5efe5;
+  box-shadow:
+    inset 0 0 0 3px #f5efe5,
+    inset 0 0 0 4px rgb(154 71 61 / 28%);
+}
+
+.score-tile__heading button:hover {
+  color: #79362f;
+  background: #eee1de;
+}
+
+.pagination button,
+.shop-pagination button,
+.acquisition-pagination button,
+.number-stepper button,
+.dialog-close {
+  border: 1px solid #9f9785;
+  border-radius: 2px;
+  color: #354d47;
+  background: #f3efe4;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 58%);
+}
+
+.pagination button:hover:not(:disabled),
+.shop-pagination button:hover:not(:disabled),
+.acquisition-pagination button:hover:not(:disabled),
+.number-stepper button:hover:not(:disabled),
+.dialog-close:hover:not(:disabled) {
+  border-color: #9a473d;
+  color: #9a473d;
+  background: #eee3df;
+}
+
+.segmented-control button {
+  border-radius: 1px;
+}
+
+.segmented-control button.active,
+.shop-tabs button.active {
+  color: #f8f4e9;
+  background: #53665f;
+  box-shadow: inset 0 -2px 0 #b19a67;
+}
+
+.shop-npc-list button.active {
+  border-color: #53665f;
+  color: #f8f4e9;
+  background: #53665f;
+  box-shadow: inset 0 -2px 0 #b19a67;
+}
+
+.shop-npc-list button.active span {
+  color: #e4ded0;
+}
+
+/* Compact account slips: one material palette, with the exchange seal on the edge. */
+.score-panel {
+  padding: 10px 12px 12px;
+}
+
+.score-grid {
+  gap: 8px;
+  padding: 4px 4px 0 0;
+  overflow: visible;
+}
+
+.score-tile,
+.score-tile--rp,
+.score-tile--favor {
+  position: relative;
+  min-height: 72px;
+  padding: 9px 11px 8px;
+  overflow: visible;
+  border: 1px solid #bcb4a3;
+  border-radius: 2px;
+  color: #354d47;
+  background-color: #eee9de;
+  background-image: url("./assets/linen-grain.svg");
+  background-size: 120px 120px;
+  box-shadow:
+    inset 0 3px 0 #b19a67,
+    0 3px 8px rgb(63 55 43 / 7%);
+}
+
+.score-tile > span,
+.score-tile__heading {
+  min-height: 0;
+  color: #52635c;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.score-tile strong {
+  margin-top: 2px;
+  color: #354d47;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.score-tile__heading button {
+  position: absolute;
+  z-index: 3;
+  top: -13px;
+  right: -13px;
+  width: 36px;
+  height: 36px;
+  padding: 0 0 2px;
+  border: 1px solid #93473f;
+  color: #93473f;
+  background: #f5efe5;
+  box-shadow:
+    0 4px 10px rgb(62 47 38 / 18%),
+    inset 0 0 0 3px #f5efe5,
+    inset 0 0 0 4px rgb(147 71 63 / 32%);
+  font: 400 25px/1 Georgia, serif;
+}
+
+.score-tile__heading button::before,
+.score-tile__heading button::after {
+  content: none;
+}
+
+.score-tile__heading button:hover {
+  color: #71352f;
+  background: #eee1de;
+  transform: translateY(-1px);
+}
+
+.score-panel .shop-button {
+  min-height: 38px;
+  margin-top: 8px;
+}
+
+/* Licensed botanical artwork supplied by the community owner — final layer. */
+.panel,
+.dialog {
+  position: relative;
+  overflow: hidden;
+}
+
+.score-panel {
+  overflow: visible;
+}
+
+.panel > *,
+.dialog > * {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card::after,
+.follower-panel::before,
+.inventory-panel::before,
+.activity-panel::before,
+.shop-dialog::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.profile-card::after {
+  top: -18px;
+  right: -24px;
+  bottom: auto;
+  width: 150px;
+  height: 160px;
+  background: url("./assets/art/owl-blossom.jpg") 65% 38% / 300px auto no-repeat;
+  opacity: .13;
+}
+
+.follower-panel::before {
+  right: -110px;
+  bottom: -120px;
+  width: 440px;
+  height: 430px;
+  background: url("./assets/art/cherry-blossom.jpg") center / cover no-repeat;
+  opacity: .065;
+}
+
+.inventory-panel::before {
+  right: -88px;
+  bottom: -60px;
+  width: 300px;
+  height: 340px;
+  background: url("./assets/art/pink-hydrangea.jpg") 58% center / cover no-repeat;
+  opacity: .075;
+}
+
+.activity-panel::before {
+  right: -120px;
+  bottom: -100px;
+  width: 360px;
+  height: 340px;
+  background: url("./assets/art/camellia-bees.jpg") right bottom / cover no-repeat;
+  opacity: .055;
+}
+
+.shop-dialog::after {
+  right: -120px;
+  bottom: -160px;
+  width: 560px;
+  height: 620px;
+  background: url("./assets/art/cherry-blossom.jpg") center / cover no-repeat;
+  opacity: .05;
+}
+
+.login-page::after {
+  inset: 0;
+  background: url("./assets/art/camellia-bees.jpg") center / cover no-repeat;
+  opacity: .42;
+}
+
+.login-card {
+  background-color: rgb(243 240 232 / 94%);
+}
+
+@media (min-width: 860px) {
+  .login-card {
+    transform: translateX(-18vw);
+  }
+}
+
+@media (max-width: 760px) {
+  .login-page::after {
+    background-position: 66% center;
+    opacity: .32;
+  }
+
+  .profile-card::after {
+    width: 130px;
+    opacity: .1;
+  }
+
+  .follower-panel::before,
+  .inventory-panel::before,
+  .activity-panel::before {
+    opacity: .045;
+  }
+}
+
+/* Portrait medallion — shared by desktop and mobile. */
+.profile-avatar {
+  box-sizing: border-box;
+  padding: 3px;
+  overflow: hidden;
+  border: 2px solid #65776f;
+  border-radius: 50%;
+  outline: 0;
+  clip-path: none;
+  background: #eee9de;
+  box-shadow:
+    inset 0 0 0 1px rgb(177 154 103 / 75%),
+    0 4px 10px rgb(49 45 38 / 13%);
+}
+
+.profile-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f1ede3;
+  transform: scale(1.24);
+}
+
+@media (max-width: 760px) {
+  .profile-card__main {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 26px;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding-inline: 24px 18px;
+  }
+
+  .profile-avatar {
+    width: 66px;
+    height: 66px;
+    flex: 0 0 66px;
+  }
+
+  .profile-copy {
+    flex: 0 1 auto;
+    padding-left: 0;
+  }
+}
+
+/* Keep modal titles and header badges clear of the close control. */
+.dialog-close {
+  z-index: 10;
+  top: 14px;
+  right: 14px;
+}
+
+.dialog > .eyebrow:first-of-type,
+.dialog > h2,
+.dialog > .dialog-intro,
+.shop-dialog .shop-intro {
+  box-sizing: border-box;
+  padding-right: 56px;
+}
+
+.dialog > .item-detail-heading {
+  padding-right: 124px;
+}
+
+.item-detail-heading .quantity-badge {
+  right: 46px;
+}
+
+@media (max-width: 520px) {
+  .dialog-close {
+    top: 12px;
+    right: 12px;
+  }
+
+  .dialog > .eyebrow:first-of-type,
+  .dialog > h2,
+  .dialog > .dialog-intro,
+  .shop-dialog .shop-intro {
+    padding-right: 54px;
+  }
+
+  .dialog > .item-detail-heading {
+    padding-right: 54px;
+  }
+
+  .item-detail-heading .quantity-badge {
+    position: static;
+    width: fit-content;
+    margin-top: 7px;
   }
 }
