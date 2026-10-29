@@ -114,7 +114,7 @@ export default function ShopPanel({
       <div className="shop-intro">
         <span className="eyebrow">โรงเบิกหลวง</span>
         <h2>เบิกของ</h2>
-        <p>เลือกของที่ต้องการ หรือดูผู้ติดตามที่เปิดรับ</p>
+        <p>เลือกสิ่งของที่ต้องการ หรือดูผู้ติดตามที่เปิดรับ</p>
       </div>
 
       <div className="shop-toolbar">
@@ -152,7 +152,6 @@ export default function ShopPanel({
       </div>
 
       <section className={`shop-section-summary ${activeSection}`}>
-        <span className="shop-section-kicker">{currentSection.eyebrow}</span>
         <div>
           <h3>{currentSection.title}</h3>
           <p>{currentSection.description}</p>
@@ -160,10 +159,10 @@ export default function ShopPanel({
       </section>
 
       {activeSection === 'restricted' && (
-        <section className="shop-npc-directory" aria-label="NPC ที่ตัวละครรู้จัก">
+        <section className="shop-npc-directory" aria-label="ผู้ติดต่อของตัวละคร">
           <div className="shop-npc-directory__heading">
-            <span>ผู้ที่ติดต่อได้</span>
-            <p>เลือกผู้ติดต่อเพื่อดูสิ่งของและเงื่อนไขการเจรจา</p>
+            <span>รายชื่อผู้ติดต่อ</span>
+            <p>เลือกชื่อเพื่อดูสิ่งของที่จัดหาได้และเงื่อนไขการเจรจา</p>
           </div>
           {npcGroups.length ? (
             <div className="shop-npc-list" role="tablist" aria-label="รายชื่อ NPC">
@@ -183,8 +182,8 @@ export default function ShopPanel({
             </div>
           ) : (
             <div className="shop-npc-locked">
-              <strong>ยังไม่มี NPC ที่รู้จัก</strong>
-              <span>ตามหาเบาะแสหรือสร้างความสัมพันธ์ผ่านการโรลและอีเวนต์ เมื่อพบกันแล้วทีมงานจะบันทึกสิทธิ์ให้</span>
+              <strong>ยังไม่มีผู้ติดต่อ</strong>
+              <span>พบปะตัวละครผ่านการโรลหรืออีเวนต์ เมื่อปลดล็อกความสัมพันธ์แล้ว รายชื่อจะปรากฏที่นี่</span>
             </div>
           )}
           {hasUnknownNpc && npcGroups.length > 0 && (
@@ -193,7 +192,7 @@ export default function ShopPanel({
         </section>
       )}
 
-      <div className="shop-grid">
+      {(activeSection !== 'restricted' || npcGroups.length > 0) && <div className="shop-grid">
         {pageEntries.length ? pageEntries.map((entry) => {
           const isItem = activeSection !== 'followers'
           const isOut = isItem && entry.is_limited && entry.stock_quantity <= 0
@@ -325,12 +324,11 @@ export default function ShopPanel({
           )
         }) : (
           <div className="empty-state shop-empty">
-            <span className="shop-empty-kicker">{currentSection.eyebrow}</span>
             <strong>{currentSection.emptyTitle}</strong>
             <p>{currentSection.emptyDescription}</p>
           </div>
         )}
-      </div>
+      </div>}
 
       {entries.length > 0 && (
         <footer className="shop-pagination">

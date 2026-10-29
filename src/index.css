@@ -5895,3 +5895,248 @@ body,
     padding-right: 0;
   }
 }
+
+/* Shop modal: compact ledger hierarchy with readable tabs and honest empty states. */
+.shop-dialog {
+  width: min(960px, calc(100vw - 40px));
+  height: auto;
+  min-height: 0;
+  max-height: calc(100dvh - 40px);
+  padding: 24px 28px 26px;
+}
+
+.shop-dialog > .dialog-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  left: auto;
+  margin: 0;
+}
+
+.shop-panel {
+  min-height: 0;
+}
+
+.shop-dialog .shop-intro {
+  max-width: none;
+  padding: 0 60px 16px 0;
+  border-bottom: 1px solid #9e988a;
+}
+
+.shop-intro .eyebrow {
+  margin: 0 0 2px;
+  color: #93473f;
+  font-size: 11px;
+}
+
+.shop-intro h2 {
+  margin: 0;
+  font-size: 29px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.shop-intro p {
+  max-width: 620px;
+  margin: 4px 0 0;
+  color: #68665f;
+  font-size: 13px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.shop-toolbar {
+  min-height: 0;
+  margin-top: 14px;
+  border: 0;
+}
+
+.shop-tabs {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  overflow: visible;
+  border: 1px solid #bbb5a7;
+  border-radius: 3px;
+  background: #e7e2d7;
+}
+
+.segmented-control.shop-tabs button {
+  min-width: 0;
+  min-height: 44px;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: #454b47;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.segmented-control.shop-tabs button:hover:not(.active) {
+  border-color: #aaa493;
+  color: #354d47;
+  background: #f1ede4;
+}
+
+.segmented-control.shop-tabs button.active {
+  border-color: #354d47;
+  color: #fffdf7;
+  background: #354d47;
+  box-shadow: inset 0 -2px 0 #b19a67;
+}
+
+.shop-section-summary,
+.shop-section-summary.external_legal,
+.shop-section-summary.restricted,
+.shop-section-summary.followers {
+  display: block;
+  margin: 12px 0 0;
+  padding: 14px 2px 13px;
+  border: 0;
+  border-bottom: 1px solid #c9c4b8;
+  border-radius: 0;
+  background: transparent;
+}
+
+.shop-section-summary h3 {
+  margin: 0;
+  color: #272c29;
+  font-size: 18px;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.shop-section-summary p {
+  margin: 3px 0 0;
+  color: #68665f;
+  font-size: 12px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.shop-grid {
+  margin-top: 12px;
+}
+
+.shop-empty {
+  min-height: 150px;
+  justify-content: center;
+  padding: 24px 2px;
+  border: 0;
+  background: transparent;
+}
+
+.shop-empty strong {
+  color: #303532;
+  font-size: 17px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.shop-empty p {
+  max-width: 520px;
+  margin-top: 5px;
+  color: #6d6a62;
+  font-size: 12px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+@media (max-width: 760px) {
+  .shop-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 20px 16px 22px;
+  }
+
+  .shop-dialog > .dialog-close {
+    top: 14px;
+    right: 14px;
+  }
+
+  .shop-dialog .shop-intro {
+    padding-right: 50px;
+  }
+
+  .shop-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .segmented-control.shop-tabs button {
+    min-width: 0;
+  }
+}
+
+/* Thumb-friendly mobile navigation. */
+@media (max-width: 760px) {
+  .player-app {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-app-nav {
+    min-height: calc(74px + env(safe-area-inset-bottom));
+    gap: 5px;
+    padding: 7px 8px max(9px, env(safe-area-inset-bottom));
+    border-top: 1px solid #9d9a8d;
+    background-color: #f3f0e8;
+    background-image: url("./assets/paper-grain.svg");
+    box-shadow: 0 -5px 16px rgb(47 50 43 / 14%);
+    backdrop-filter: none;
+  }
+
+  .mobile-app-nav button {
+    min-width: 0;
+    min-height: 56px;
+    gap: 3px;
+    padding: 6px 3px 5px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #686b65;
+    background: transparent;
+    font-size: 12px;
+    line-height: 1.2;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-app-nav button:active {
+    transform: translateY(1px);
+  }
+
+  .mobile-app-nav button.active {
+    border-color: #aab3a6;
+    color: #2f4941;
+    background: #dfe5dc;
+    box-shadow: inset 0 -2px 0 #b19a67;
+  }
+
+  .mobile-app-nav button > span,
+  .mobile-app-nav button.active > span {
+    width: auto;
+    height: auto;
+    background: transparent;
+  }
+
+  .mobile-nav-icon {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-nav-label {
+    display: block;
+    white-space: nowrap;
+  }
+}
